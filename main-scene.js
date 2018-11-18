@@ -73,12 +73,12 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.r1 = 0;
             this.r2 = 0;
             this.rTime = 0;
+            this.c = 0;
         }
 
         make_control_panel() { // TODO:  Implement requirement #5 using a key_triggered_button that responds to the 'c' key.
-            this.key_triggered_button("Rotate", ["c"], () => {
-                this.rotateFlag = !this.rotateFlag;
-
+            this.key_triggered_button("MoveRight", ["c"], () => {
+                this.c++;
             });
         }
 
@@ -108,21 +108,22 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
 
             // TODO:  Draw the required boxes. Also update their stored matrices.
             //this.shapes.axis.draw( graphics_state, Mat4.identity(), this.materials.phong );
-            let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0)));
-            ;
+            let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
             for (let i = 0; i < this.logic.grid.length; i++) {
-                grid_transform = grid_transform.times(Mat4.translation([0, i, 0]));
+                let transform = grid_transform.times(Mat4.translation([0, i, 0]));
                 let row = this.logic.grid[i];
-                for (let i = 0; i < row.length; i++) {
-                    let row_translation = grid_transform.times(Mat4.translation([i, 0, 0]));
-                    if (row[i] === 0) {
+                for (let j = 0; j < row.length; j++) {
+                    let row_translation = transform.times(Mat4.translation([j, 0, 0]));
+                    if (row[j] === 0) {
                         this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
-                    } else if (row[i] === 1) {
-                        box1_transform = row_translation.times(Mat4.rotation(80, Vec.of(1, 0, 0))).times(Mat4.translation([0, 1, 0]));
-                        this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
-                    } else if (row[i] === 2) {
+                    } else if (row[j] === 1) {
+                        box1_transform = row_translation.times(Mat4.rotation(80, Vec.of(1, 0, 0))).times(Mat4.translation([0, 2, 0]));
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.scale([1, 2, 1])), this.materials.wall);
+                    } else if (row[j] === 2) {
                         this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
-                        let player_transform = row_translation.times(Mat4.translation([0, 0, -1])).times(Mat4.scale([1 / 2, 1 / 2, 1 / 2]));
+                        if (this.c >= 10)
+                            this.c = -5;
+                        let player_transform = row_translation.times(Mat4.translation([this.c, 0, -1])).times(Mat4.scale([1 / 2, 1 / 2, 1 / 2]));
                         this.shapes.player.draw(graphics_state, player_transform, this.materials.phong.override({color: Color.of(.5, 2, .5, 1)}));
                     }
                 }
