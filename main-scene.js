@@ -3,6 +3,8 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
         constructor(context, control_box)     // The scene begins by requesting the camera, shapes, and materials it will need.
         {
             super(context, control_box);    // First, include a secondary Scene that provides movement controls:
+            
+            new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
@@ -19,7 +21,11 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                 box_2: new Cube(),
                 axis: new Axis_Arrows(),
                 square: new Square(),
-                player: new Subdivision_Sphere(4)
+                player: new Subdivision_Sphere(4),
+            }
+            this.colliders = {
+                sphere1: new CollidingSphere([-5, 3, 3], 0, [1,0,0], 1),
+                sphere2: new CollidingSphere([5, 3, 3], 0, [1,0,0], 2)
             }
             shapes.box_2.texture_coords = [Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
                 Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
@@ -74,12 +80,12 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.r2 = 0;
             this.rTime = 0;
             this.c = 0;
+            this.moveright = false;
         }
 
         make_control_panel() { // TODO:  Implement requirement #5 using a key_triggered_button that responds to the 'c' key.
-            this.key_triggered_button("MoveRight", ["c"], () => {
-                this.c++;
-            });
+            this.key_triggered_button("MoveRight", ["c"], () => { this.moveright = true; }, undefined, () => { this.moveright = false });
+            this.key_triggered_button("MoveLeft", ["x"], () => { this.moveleft = true; }, undefined, () => { this.moveleft = false });
         }
 
         display(graphics_state) {
@@ -128,6 +134,22 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                     }
                 }
             }
+
+            if (this.moveright) { this.colliders.sphere1.translate(0.2,0,0) }
+            if (this.moveleft) { this.colliders.sphere1.translate(-0.2,0,0) }
+
+            //console.log(this.colliders)
+            this.colliders.sphere1.draw(graphics_state, this.shapes.player, this.materials.phong)
+            //console.log(1)
+            if (this.colliders.sphere1.collides(this.colliders.sphere2)) {
+                //console.log('colliding')
+                this.colliders.sphere2.draw(graphics_state, this.shapes.player, this.materials.phong.override({color: Color.of(1, 0, 0, 1)}))
+            }
+            else {
+                //console.log('not colliding')
+                this.colliders.sphere2.draw(graphics_state, this.shapes.player, this.materials.phong)
+            }
+            //console.log(2)
 
             // this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
             // this.shapes.square.draw(graphics_state, box2_transform, this.materials.wall);
