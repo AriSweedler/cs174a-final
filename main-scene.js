@@ -18,7 +18,8 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                 box_2: new Cube(),
                 axis: new Axis_Arrows(),
                 square: new Square(),
-                player: new Subdivision_Sphere(4),
+                player: new Subdivision_Sphere(4)
+            };  
             this.colliders =  [new Monster([0,0,0])];
          
            
