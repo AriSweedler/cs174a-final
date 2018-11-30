@@ -8,57 +8,26 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
-            context.globals.graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 4, 9), Vec.of(0, -1, 0), Vec.of(0, 1, 0));
+            context.globals.graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 2, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
 
             const r = context.width / context.height;
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            // TODO:  Create two cubes, including one with the default texture coordinates (from 0 to 1), and one with the modified
-            //        texture coordinates as required for cube #2.  You can either do this by modifying the cube code or by modifying
-            //        a cube instance's texture_coords after it is already created.
             const shapes = {
                 box: new Cube(),
                 box_2: new Cube(),
                 axis: new Axis_Arrows(),
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
-            }
-            this.colliders = {
-                sphere1: new CollidingSphere([-5, 3, 3], 0, [1,0,0], 1),
-                sphere2: new CollidingSphere([5, 3, 3], 0, [1,0,0], 2)
-            }
-            shapes.box_2.texture_coords = [Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4)];
+            this.colliders =  [new Monster([0,0,0])];
+         
+           
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
-            // TODO:  Create the materials required to texture both cubes with the correct images and settings.
-            //        Make each Material from the correct shader.  Phong_Shader will work initially, but when
-            //        you get to requirements 6 and 7 you will need different ones.
             this.materials =
                 {
                     phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
+                    phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
                     'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                         specularity: 0,
                         ambient: 0.5,
@@ -70,22 +39,40 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                         texture: context.get_instance("assets/floor.jpg", false)
                     })
 
-                }
+                };
 
             this.lights = [new Light(Vec.of(-5, 5, 5, 1), Color.of(0, 1, 1, 1), 100000)];
 
-            // TODO:  Create any variables that needs to be remembered from frame to frame, such as for incremental movements over time.
             this.rotateFlag = false;
             this.r1 = 0;
             this.r2 = 0;
             this.rTime = 0;
             this.c = 0;
-            this.moveright = false;
+            this.playerM = Mat4.identity();//POSITION OF THE PLAYER!!!!
+            this.logic.move(5);
+            this.logic.changeAngle(35);
+            this.camera = true;
+            this.time = 0;
+            //this.colliders = [];
+            this.nextSpawn = 5.0;
         }
 
-        make_control_panel() { // TODO:  Implement requirement #5 using a key_triggered_button that responds to the 'c' key.
-            this.key_triggered_button("MoveRight", ["c"], () => { this.moveright = true; }, undefined, () => { this.moveright = false });
-            this.key_triggered_button("MoveLeft", ["x"], () => { this.moveleft = true; }, undefined, () => { this.moveleft = false });
+        make_control_panel() {
+            this.key_triggered_button("MoveForward", ["g"], () => {
+                this.logic.move(-1);
+            });
+            this.key_triggered_button("MoveBack", ["b"], () => {
+                this.logic.move(1);
+            });
+            this.key_triggered_button("turnLeft", ["c"], () => {
+                this.logic.changeAngle(1);
+            });
+            this.key_triggered_button("turnRight", ["v"], () => {
+                this.logic.changeAngle(-1);
+            });
+            this.key_triggered_button("switchCamera", ["x"], () => {
+                this.camera = !this.camera;
+            });
         }
 
         display(graphics_state) {
@@ -99,7 +86,6 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             floor_transform = floor_transform.times(Mat4.translation([0, -1, 1]))
                 .times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0)));
 
-
             //box1_transform = box1_transform.times(Mat4.translation([-2,0,0]));
             box2_transform = box2_transform.times(Mat4.translation([2, 0, 0]));
             if (this.rotateFlag) {
@@ -111,9 +97,17 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             box1_transform = box1_transform.times(Mat4.rotation(this.r1, Vec.of(1, 0, 0)));
             box2_transform = box2_transform.times(Mat4.rotation(this.r2, Vec.of(0, 1, 0)));
 
+            //PLAYER camera
+            if (this.camera) {
+                this.playerM = Mat4.identity();
+                this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
+                this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
+                graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
+                this.time = t;
+            } else if (t > this.time + 1) {
+                graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
+            }
 
-            // TODO:  Draw the required boxes. Also update their stored matrices.
-            //this.shapes.axis.draw( graphics_state, Mat4.identity(), this.materials.phong );
             let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
             for (let i = 0; i < this.logic.grid.length; i++) {
                 let transform = grid_transform.times(Mat4.translation([0, i, 0]));
@@ -122,40 +116,45 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                     let row_translation = transform.times(Mat4.translation([j, 0, 0]));
                     if (row[j] === 0) {
                         this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
+                        let cealing = row_translation.times(Mat4.translation([0, 0, -4]));
+                        this.shapes.square.draw(graphics_state, cealing, this.materials.floor);
                     } else if (row[j] === 1) {
-                        box1_transform = row_translation.times(Mat4.rotation(80, Vec.of(1, 0, 0))).times(Mat4.translation([0, 2, 0]));
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.scale([1, 2, 1])), this.materials.wall);
+                        box1_transform = row_translation.times(Mat4.rotation(4.7, Vec.of(1, 0, 0))).times(Mat4.translation([0, 2, 0]));
+                        this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, -1, 0])), this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 1, 0])), this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 2, 0])), this.materials.wall);
                     } else if (row[j] === 2) {
+                        box1_transform = row_translation.times(Mat4.rotation(4.7, Vec.of(1, 0, 0)))
+                            .times(Mat4.rotation(4.7, Vec.of(0, 1, 0))).times(Mat4.translation([0, 2, 0]));
+                        this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, -1, 0])), this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 1, 0])), this.materials.wall);
+                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 2, 0])), this.materials.wall);
+                    } else if (row[j] === 3) {
                         this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
-                        if (this.c >= 10)
-                            this.c = -5;
                         let player_transform = row_translation.times(Mat4.translation([this.c, 0, -1])).times(Mat4.scale([1 / 2, 1 / 2, 1 / 2]));
-                        this.shapes.player.draw(graphics_state, player_transform, this.materials.phong.override({color: Color.of(.5, 2, .5, 1)}));
+                        //this.shapes.player.draw(graphics_state, player_transform, this.materials.phong.override({color: Color.of(.5, 2, .5, 1)}));
+                        //const desired_camera = Mat4.inverse(player_transform);
+                        //graphics_state.camera_transform = desired_camera.map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 4 * dt));
                     }
                 }
             }
+            this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
 
-            if (this.moveright) { this.colliders.sphere1.translate(0.2,0,0) }
-            if (this.moveleft) { this.colliders.sphere1.translate(-0.2,0,0) }
-
-            //console.log(this.colliders)
-            this.colliders.sphere1.draw(graphics_state, this.shapes.player, this.materials.phong)
-            //console.log(1)
-            if (this.colliders.sphere1.collides(this.colliders.sphere2)) {
-                //console.log('colliding')
-                this.colliders.sphere2.draw(graphics_state, this.shapes.player, this.materials.phong.override({color: Color.of(1, 0, 0, 1)}))
+            if(t > this.nextSpawn && t < this.nextSpawn+1){
+                if(this.colliders.length < 7){
+                     this.colliders.push(new Monster([-5,1,0]));
+                }
+                this.nextSpawn += 5.0;
             }
-            else {
-                //console.log('not colliding')
-                this.colliders.sphere2.draw(graphics_state, this.shapes.player, this.materials.phong)
-            }
-            //console.log(2)
 
-            // this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
-            // this.shapes.square.draw(graphics_state, box2_transform, this.materials.wall);
-            // this.shapes.square.draw(graphics_state, floor_transform, this.materials.floor);
+            for(var i =0; i<this.colliders.length; i++){
+                this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
+                this.colliders[i].move(t,this.playerPos);
+            }
         }
-    }
+    };
 
 class Texture_Scroll_X extends Phong_Shader {
     fragment_glsl_code()           // ********* FRAGMENT SHADER *********
