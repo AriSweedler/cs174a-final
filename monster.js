@@ -1,7 +1,7 @@
 window.Monster= window.classes.Monster =
 class Monster extends CollidingSphere {
-  constructor(position, rotAngle, rotAxis, radius) {
-     super(position, rotAngle, Vec.of(0,1,0), radius);
+  constructor(position) {
+     super(position, 0, Vec.of(0,1,0), 0.5);
      this.health = 100.0;
      this.color = Color.of(1,1,1,1);
      this.hit = false;
@@ -27,10 +27,10 @@ class Monster extends CollidingSphere {
     }
   }
 
-  move(t,player){
+  move(t,playerPos){
      
     if(this.hit){ //seek player if hit
-        this.direction = Vec.of(...player.position).minus(Vec.of(...this.position));
+        this.direction = playerPos.minus(Vec.of(...this.position));
         const dist = Math.sqrt(this.direction.dot(this.direction));
 
         this.translate(this.speed*this.direction[0]/dist, this.speed*this.direction[1]/dist, this.speed*this.direction[2]/dist);
@@ -39,8 +39,8 @@ class Monster extends CollidingSphere {
 
     }else{//move arbitrarily
         t = 0.02*Math.sin(1.3*t);
-        if(this.position[0] > 8 || this.position[0] <-10 || this.position[1] < -1 || this.position[1] > 6 
-        || this.position[2] > 12 || this.position[2] < 0){
+        if(this.position[0] > 14 || this.position[0] <0 || this.position[1] < -1 || this.position[1] > 4
+        || this.position[2] > 9 || this.position[2] < 0){
           this.rotation = 0.0;
           //this.rotAxis = Vec.of(0,0,0);
 

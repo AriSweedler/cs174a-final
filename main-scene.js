@@ -16,37 +16,17 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                 box_2: new Cube(),
                 axis: new Axis_Arrows(),
                 square: new Square(),
-                player: new Subdivision_Sphere(4)
+                player: new Subdivision_Sphere(4),
             };
-            shapes.box_2.texture_coords = [Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4),
-                Vec.of(0, 0), Vec.of(2, 0), Vec.of(0, 2), Vec.of(2, 2),
-                Vec.of(2, 0), Vec.of(4, 0), Vec.of(2, 2), Vec.of(4, 2),
-                Vec.of(0, 2), Vec.of(2, 2), Vec.of(0, 4), Vec.of(2, 4),
-                Vec.of(2, 2), Vec.of(4, 2), Vec.of(2, 4), Vec.of(4, 4)];
+            this.colliders =  [new Monster([0,0,0])];
+         
+           
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
             this.materials =
                 {
                     phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
+                    phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
                     'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                         specularity: 0,
                         ambient: 0.5,
@@ -72,7 +52,8 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.logic.changeAngle(35);
             this.camera = true;
             this.time = 0;
-            this.colliders = [];
+            //this.colliders = [];
+            this.nextSpawn = 5.0;
         }
 
         make_control_panel() {
@@ -157,6 +138,19 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                         //graphics_state.camera_transform = desired_camera.map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 4 * dt));
                     }
                 }
+            }
+            this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
+
+            if(t > this.nextSpawn && t < this.nextSpawn+1){
+                if(this.colliders.length < 7){
+                     this.colliders.push(new Monster([0,1,0]));
+                }
+                this.nextSpawn += 5.0;
+            }
+
+            for(var i =0; i<this.colliders.length; i++){
+                this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
+                this.colliders[i].move(t,this.playerPos);
             }
         }
     };
