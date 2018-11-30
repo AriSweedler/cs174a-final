@@ -143,7 +143,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
 
             if(t > this.nextSpawn && t < this.nextSpawn+1){
                 if(this.colliders.length < 7){
-                     this.colliders.push(new Monster([0,1,0]));
+                     this.colliders.push(new Monster([-5,1,0]));
                 }
                 this.nextSpawn += 5.0;
             }
