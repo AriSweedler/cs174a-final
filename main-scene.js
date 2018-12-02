@@ -40,6 +40,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.materials = {
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
+                phong3:context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1),{ambient: 1, diffuse: 1}),
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.5,
@@ -63,7 +64,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             };
 
-            this.rotateFlag = true;
+            this.rotateFlag = false;
             this.r1 = 0;
             this.r2 = 0;
             this.rTime = 0;
@@ -106,6 +107,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (let i = 0; i < 150; i++) {
                 this.walls.push(Mat4.rotation(Math.random() * 6, Vec.of(0,1,0)).times(Mat4.translation([Math.random() * 800 - 400, 0, Math.random() * 800 - 400])))
             }
+
         }
 
         make_control_panel() {
@@ -135,9 +137,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 } )
             );
 
+            this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
+            this.key_triggered_button("down", ["2"], () => this.movedown = true, undefined, () => this.movedown = false);
+            this.key_triggered_button("left", ["4"], () => this.moveleft = true, undefined, () => this.moveleft = false);
+            this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
+            this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
+            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);
+
             this.new_line();
             /*y = 0.8 is as far left, y=-0.8 is as far right*/
-            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*/
+            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*//*
             this.key_triggered_button("lightLeft", ["a"], () => {
                 if (this.flashlight.angle.y >= 0.8) {
                     return
@@ -161,7 +170,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     return;
                 }
                 this.flashlight.angle.x -= 0.01;
-            });
+            });*/
         }
 
         display(graphics_state, gl) {
@@ -379,11 +388,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }*/
             this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
 
-            if(t > this.nextSpawn && t < this.nextSpawn+1){
-                if(this.colliders.length < 7){
-                     this.colliders.push(new Monster([-5,1,0]));
-                }
-                this.nextSpawn += 5.0;
+            //this.shapes.box.draw(graphics_state, Mat4.translation([5,0,0]), this.materials.phong.override({color: Color.of([1.0,0.0,0.0,1.0]), ambient: 1}))
+            this.colliders[1].translate(this.x, this.y, this.z)
+            if (this.colliders[1].collides(this.colliders[2])) {
+                this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong2)
             }
 
             for(var i =0; i<this.colliders.length; i++){
