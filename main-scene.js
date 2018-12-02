@@ -33,6 +33,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 sphere: new Subdivision_Sphere(1),
             };
             this.colliders =  [new Monster([0,0,0])];
+            this.playerCollider = new CollidingSphere([0,0,0],0,[1,0,0],0.3);
+            this.playerHealth = 200.0;           
 
 
             this.submit_shapes(context, shapes);
