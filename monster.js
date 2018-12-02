@@ -27,10 +27,10 @@ class Monster extends CollidingSphere {
     }
   }
 
-  move(t,player){
+  move(t,playerPos){
      
     if(this.hit){ //seek player if hit
-        this.direction = (player.position).minus(Vec.of(...this.position));
+        this.direction = playerPos.minus(Vec.of(...this.position));
         const dist = Math.sqrt(this.direction.dot(this.direction));
 
         this.translate(this.speed*this.direction[0]/dist, this.speed*this.direction[1]/dist, this.speed*this.direction[2]/dist);

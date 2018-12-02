@@ -28,8 +28,4 @@ class CollidingSphere {
     this.position[1] += y
     this.position[2] += z
   }
-
-  setPos(pos){
-    this.position = pos;
-  }
 }
