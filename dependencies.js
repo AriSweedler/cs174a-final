@@ -109,6 +109,33 @@ window.Cube = window.classes.Cube =
                     Square.insert_transformed_copy_into(this, [], square_transform);
                 }
         }
+
+/*
+    draw( graphics_state, model_transform, material, type = "TRIANGLES", gl = this.gl )        // To appear onscreen, a shape of any variety
+    { if( !this.gl ) throw "This shape's arrays are not copied over to graphics card yet.";  // goes through this draw() function, which
+      material.shader.activate();                                                            // executes the shader programs.  The shaders
+      material.shader.update_GPU( graphics_state, model_transform, material );               // draw the right shape due to pre-selecting
+                                                                                             // the correct buffer region in the GPU that
+      for( let [ attr_name, attribute ] of Object.entries( material.shader.g_addrs.shader_attributes ) )  // holds that shape's data.
+      { const buffer_name = material.shader.map_attribute_name_to_buffer_name( attr_name )
+        if( !buffer_name || !attribute.enabled )
+          { if( attribute.index >= 0 ) gl.disableVertexAttribArray( attribute.index );
+            continue;
+          }
+        gl.enableVertexAttribArray( attribute.index );
+        gl.bindBuffer( gl.ARRAY_BUFFER, this.array_names_mapping_to_WebGLBuffers[ buffer_name ] ); // Activate the correct buffer.
+        gl.vertexAttribPointer( attribute.index, attribute.size, attribute.type,                   // Populate each attribute 
+                                attribute.normalized, attribute.stride, attribute.pointer );       // from the active buffer.
+      }
+        
+
+      this.execute_shaders( gl, type );   
+
+     
+      //gl.bindTexture(gl.TEXTURE_2D, null);
+                                                   // Run the shaders to draw every triangle now.
+*/
+
     }
 
 window.Line_Segment_Array = window.classes.Line_Segment_Array =
@@ -797,7 +824,7 @@ window.Movement_Controls = window.classes.Movement_Controls =
             do_operation(Mat4.translation([0, 0, sign * -25]));
         }
 
-        display(graphics_state, dt = graphics_state.animation_delta_time / 1000)    // Camera code starts here.
+        display(graphics_state, gl, dt = graphics_state.animation_delta_time / 1000)    // Camera code starts here.
         {
             const m = this.speed_multiplier * this.meters_per_frame,
                 r = this.speed_multiplier * this.radians_per_frame;

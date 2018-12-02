@@ -8,7 +8,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
-            context.globals.graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 2, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
+            context.globals.graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 2, 10), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
 
             const r = context.width / context.height;
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
@@ -27,7 +27,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.logic = new Logic();
             this.materials =
                 {
-                    phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
+                    phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 1, diffuse: 1}),
                     phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
                     'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                         specularity: 0,
@@ -38,11 +38,11 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                         specularity: 0,
                         ambient: 0.7,
                         texture: context.get_instance("assets/floor.jpg", false)
-                    })
+                    }),
+                    tex: context.get_instance(Tex_Shader).material(),
+                    shadow: context.get_instance(Shadow_Shader).material(0.1)
 
                 };
-
-            this.lights = [new Light(Vec.of(-5, 5, 5, 1), Color.of(0, 1, 1, 1), 100000)];
 
             this.rotateFlag = false;
             this.r1 = 0;
@@ -56,6 +56,8 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.time = 0;
             //this.colliders = [];
             this.nextSpawn = 5.0;
+
+            this.lights = [ new Light( Mat4.look_at(Vec.of(6, 0, 12), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(0,0,6), Color.of( 1, 1, 1, 1 ), 1000 ) ];
         }
 
         make_control_panel() {
@@ -76,7 +78,64 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             });
         }
 
-        display(graphics_state) {
+        display(graphics_state, gl) {
+            graphics_state.lights = this.lights
+
+            const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
+
+            const x = 2.0 * Math.cos(t)
+            const y = 2.0 * Math.sin(t)
+            let light = this.lights[0].transform
+
+            let width = 256
+      let height = 256
+      let color_buffer = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, color_buffer);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                                  gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      let depth_buffer = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, depth_buffer);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0,
+                                  gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      let frame_buffer = gl.createFramebuffer()
+      gl.bindFramebuffer(gl.FRAMEBUFFER, frame_buffer);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, color_buffer, 0);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, depth_buffer, 0);
+
+            //this.shapes.player.draw(graphics_state, Mat4.translation([x,y,1]), this.materials.phong2)
+            let temp = graphics_state.camera_transform;
+            graphics_state.camera_transform = light
+            this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([10,10,1])), this.materials.phong2)
+            //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
+            graphics_state.camera_transform = temp
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            
+            //gl.clearColor(0,0,0,1);
+            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+gl.bindTexture(gl.TEXTURE_2D, depth_buffer)
+            this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([10,10,1])), this.materials.shadow)
+            //gl.bindTexture(gl.TEXTURE_2D, null)
+gl.bindTexture(gl.TEXTURE_2D, null)
+            this.shapes.box.draw(graphics_state, Mat4.inverse(light), this.materials.phong2)
+            //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
+            
+            
+            
+
+            /*
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
@@ -154,6 +213,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t,this.playerPos);
             }
+            */
         }
     };
 
