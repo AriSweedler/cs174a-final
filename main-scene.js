@@ -356,7 +356,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     }
                 }
             }
-            this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
+            this.playerCollider.setPos(Vec.of(this.logic.posX, 0, this.logic.posZ));
 
             if(t > this.nextSpawn && t < this.nextSpawn+1){
                 if(this.colliders.length < 7){
@@ -367,8 +367,18 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             for(var i =0; i<this.colliders.length; i++){
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
-                this.colliders[i].move(t,this.playerPos);
-                this.colliders[i].damage();
+                this.colliders[i].move(t,this.playerCollider);
+                //this.colliders[i].damage();
+
+                if(this.colliders[i].collides(this.playerCollider)){
+                    this.playerHealth -= 0.5;
+                }
+
+                if(this.colliders[i].health < 0){
+                    this.colliders.splice(i,1);
+                }
+
+                
             }
             // (Save scene 1 into an image)
             this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
