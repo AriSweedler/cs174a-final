@@ -1,6 +1,6 @@
 window.CollidingSphere = window.classes.CollidingSphere =
 class CollidingSphere {
-  constructor(position, rotAngle, rotAxis, radius) {
+  constructor(position, rotAngle = 0.0, rotAxis= [1,0,0], radius) {
     this.position = position
     this.rotAngle = rotAngle
     this.rotAxis = rotAxis
@@ -28,4 +28,5 @@ class CollidingSphere {
     this.position[1] += y
     this.position[2] += z
   }
+
 }

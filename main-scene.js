@@ -15,18 +15,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             const r = context.width / context.height;
             context.globals.graphics_state.projection_transform = Mat4.perspective(Math.PI / 4, r, .1, 1000);
 
-            this.webgl_manager = context;      // Save off the Webgl_Manager object that created the scene.
-            this.scratchpad = document.createElement('canvas');
-            this.scratchpad_context = this.scratchpad.getContext('2d');     // A hidden canvas for re-sizing the real canvas to be square.
-            this.scratchpad.width = 256;
-            this.scratchpad.height = 256;
-            this.texture = new Texture(context.gl, "", false, false);        // Initial image source: Blank gif file
-            this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
             const shapes = {
                 box: new Cube(),
                 box_2: new Cube(),
-                cone: new Rounded_Closed_Cone(10, 10),
+                cone: new Cone_Tip(13, 13),
                 axis: new Axis_Arrows(),
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
@@ -51,12 +43,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     texture: context.get_instance("assets/floor.jpg", false)
                 }),
                 'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
-
                     // ambient to 1, diffuse to 0, and specular to 0
                     ambient: 1,
                     diffusivity: 0,
                     specularity: 0,
-                    texture: context.get_instance("assets/stripes.png", true)
+                    texture: context.get_instance("assets/sunray2.png", true)
                 }),
                 'heart': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
@@ -95,13 +86,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 playerToHand: [0.1, 0.1, -0.9],
                 longThin: [1, 1, 5],
                 collider_transform: null,
-                colliders: []
+                colliders: [],
+                rotation: 0
             };
 
             this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000),
                 new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000)];
-
-
         }
 
         make_control_panel() {
@@ -156,105 +146,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         }
 
         display(graphics_state, gl) {
-
-            /*  SHADOWS TEST STUFF
-                    graphics_state.light = this.lights[0]
-                    graphics_state.depth_buffer = this.depth_buffer
-
-                    const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
-
-                    const x = 50.0 * Math.cos(t/ 5)
-                    const y = 100.0 * Math.sin(t/ 5)
-
-                    this.lights[0].transform = Mat4.look_at(Vec.of(0, x, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0))
-                    this.lights[0].position = Vec.of(0, x, 50, 1)
-                    this.lights[1].transform = Mat4.look_at(Vec.of(100, -x, 50), Vec.of(100, 0, 0), Vec.of(0, 1, 0))
-                    this.lights[1].position = Vec.of(50, -x, 50, 1)
-
-                    this.lights[0].drawDepthBuffer(graphics_state, () => {
-                          this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                    })
-
-                    this.lights[1].drawDepthBuffer(graphics_state, () => {
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.phong)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                    })
-
-                    this.lights[0].drawOutputBuffer(graphics_state, () => {
-                          this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                    })
-
-                    this.lights[1].drawOutputBuffer(graphics_state, () => {
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                          this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                    })
-
-                    for (let i = 0; i < this.lights.length; i++) {
-                          this.lights[i].clearDepthBuffer()
-                    }
-
-                    this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[0].transform), this.materials.phong2)
-                    this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[1].transform), this.materials.phong2)
-
-                    gl.activeTexture(gl.TEXTURE0)
-                    //this.shapes.player.draw(graphics_state, Mat4.translation([x,y,1]), this.materials.phong2)
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
-                    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
-                    let temp = graphics_state.camera_transform;
-                    graphics_state.camera_transform = light
-                    this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                    //this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong)
-                    //this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong)
-                    //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
-                    graphics_state.camera_transform = temp
-
-
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                    //gl.clearColor(0,0,0,1);
-                    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                    gl.activeTexture(gl.TEXTURE0)
-                    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
-                    this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                    this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                    //this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
-                    //this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
-                    this.shapes.box.draw(graphics_state, Mat4.inverse(light), this.materials.phong2)
-                    gl.bindTexture(gl.TEXTURE_2D, null)
-                    gl.activeTexture(gl.TEXTURE1)
-                    gl.bindTexture(gl.TEXTURE_2D, null)
-
-
-                    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
-                    gl.deleteTexture(this.depth_buffer)
-                    this.depth_buffer = gl.createTexture();
-                    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0,
-                                                gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
-
-                    //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
-
-                    */
-
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
@@ -265,7 +156,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             floor_transform = floor_transform.times(Mat4.translation([0, -1, 1]))
                 .times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0)));
 
-            //box1_transform = box1_transform.times(Mat4.translation([-2,0,0]));
             box2_transform = box2_transform.times(Mat4.translation([2, 0, 0]));
             if (this.rotateFlag) {
                 this.r1 = this.r1 + 0.5 * (t - this.rTime);
@@ -281,11 +171,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
                 this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
                 graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
-                // let health = this.playerM.times(Mat4.translation([1, 1, -2])).times(Mat4.scale([1 / 12, 1 / 12, 1 / 12]))
-                //     .times(Mat4.translation([5, 9, 0]));
-                // for (let i = 0; i < this.logic.health; i++) {
-                //     this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
-                // }
                 let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
                     .times(Mat4.translation([-0.5, -0.5, 0]));
                 for (let i = 0; i < this.logic.health; i++) {
@@ -322,10 +207,15 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times(Mat4.translation(this.flashlight.centerToTip))
                 .times(Mat4.scale(this.flashlight.longThin))
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
-
+            
             for (let i = 0; i < 5; i++) {
+                this.flashlight.rotation += Math.random()*0.01;
                 this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
-                this.flashlight.transform = this.flashlight.transform.times( Mat4.scale(Array(3).fill(0.9)) );
+                this.flashlight.transform = this.flashlight.transform
+                    .times(Mat4.translation(this.flashlight.centerToTip))
+                    .times(Mat4.rotation(this.flashlight.rotation, [0, 0, 1]))
+                    .times( Mat4.scale([0.5, 0.5, 0.5]) )
+                    .times(Mat4.translation(this.flashlight.centerToTip.map(x => -x)));
             }
 
             /* Compute where the collider spheres would be */
@@ -333,11 +223,25 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.flashlight.collider_transform = this.flashlight.collider_transform
                     .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
                     .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
-                this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
 
-                let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
+                // let matTemp = this.materials.phong2;
+
+                let sphere = {
+                    position: this.flashlight.collider_transform.times( Vec.of(0,0,0,1) ),
+                    radius: 0.001 + i*0.03
+                };
+                /* For each colliding sphere, check to see if it hits a ghost */
+                for (let j = 0; j < this.colliders.length; j++) {
+                    if (this.colliders[j].collides(sphere)) {
+                        this.colliders[j].damage();
+                        // matTemp = this.materials.phong;
+                        console.log("hit ghost");
+                    }
+                }
+                // this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, matTemp);
 
                 // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
+
             }
 
             /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
@@ -388,16 +292,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
-                this.colliders[i].damage();
             }
-            // (Save scene 1 into an image)
-            this.scratchpad_context.drawImage(this.webgl_manager.canvas, 0, 0, 256, 256);
-            this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
-
-            // Clear the canvas and start over, beginning scene 2:
-            // this.webgl_manager.gl.clear( this.webgl_manager.gl.COLOR_BUFFER_BIT | this.webgl_manager.gl.DEPTH_BUFFER_BIT);
-
-            // (Draw scene 2)
 
         }
     };
@@ -407,17 +302,21 @@ class Flashlight_Shader extends Phong_Shader
 {
     shared_glsl_code(){return `
         precision mediump float;
+        varying float ambient, animation_time;
         varying vec2 f_tex_coord;
+        varying vec4 position, center;
     `;}
 
     vertex_glsl_code(){return `
     attribute vec3 object_space_pos;
     attribute vec2 tex_coord;
 
-    uniform mat4 camera_model_transform, projection_camera_model_transform;
+    uniform mat4 model_transform, camera_model_transform, projection_camera_model_transform;
 
     void main()
     {
+        position = model_transform * vec4(object_space_pos, 1.0);
+        center = model_transform * vec4( 0,0,0,1 );
         gl_Position = projection_camera_model_transform * vec4(object_space_pos, 1.0);
         f_tex_coord = tex_coord;
 
@@ -430,16 +329,13 @@ class Flashlight_Shader extends Phong_Shader
     uniform vec4 shapeColor;
     void main()
     {
-        vec4 tex_color = texture2D( texture, f_tex_coord.xy );
-        vec4 color = tex_color.xyzw;
+        float distance = distance(position, center);
+        vec4 tex_color = texture2D( texture, f_tex_coord );
 
         float alpha = tex_color.w * shapeColor.w;
-        if (alpha < 0.7) discard;
+        if (alpha < 0.2) discard;
 
-        vec4 color = vec4( tex_color.xyz, alpha );
-
-
-        gl_FragColor = color;
+        gl_FragColor = vec4( tex_color.xyz, alpha );
     }
     `;}
 }

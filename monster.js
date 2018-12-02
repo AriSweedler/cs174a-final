@@ -14,7 +14,7 @@ class Monster extends CollidingSphere {
 
   damage(){
     this.health = this.health - 0.5;
-    this.speed = 0.006+(100-this.health)*0.0015;
+    this.speed = 0.005+(100-this.health)*0.0015;
     this.color = Color.of(1,1,1,(this.health/100.0));
     this.radius = this.radius*((this.health+10.0)/110.0);
     if(this.radius < 0.3){
@@ -22,7 +22,7 @@ class Monster extends CollidingSphere {
 
     }
     this.hit = true;
-    if(this.health < 0){
+    if(this.health < 60){
       this.alive = false;
     }
   }
@@ -49,7 +49,7 @@ class Monster extends CollidingSphere {
           this.rotation = Math.atan2(sq,Math.abs(this.direction[1]));      
         
         }
-        this.translate(0.005*this.direction[0],t+0.005*this.direction[1], 0.005*this.direction[2]);
+        this.translate(this.speed*this.direction[0], this.speed*this.direction[1], this.speed*this.direction[2]);
        
     }
      
