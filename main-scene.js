@@ -21,16 +21,14 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.texture = new Texture ( context.gl, "", false, false );        // Initial image source: Blank gif file
             this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-            // TODO:  Create two cubes, including one with the default texture coordinates (from 0 to 1), and one with the modified
-            //        texture coordinates as required for cube #2.  You can either do this by modifying the cube code or by modifying
-            //        a cube instance's texture_coords after it is already created.
             const shapes = {
                 box: new Cube(),
                 box_2: new Cube(),
                 cone: new Rounded_Closed_Cone(10, 10),
                 axis: new Axis_Arrows(),
                 square: new Square(),
-                player: new Subdivision_Sphere(4)
+                player: new Subdivision_Sphere(4),
+                sphere: new Subdivision_Sphere(1),
             };  
             this.colliders =  [new Monster([0,0,0])];
          
@@ -50,11 +48,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
                 }),
-                flashlight: context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
+                'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
                     // ambient to 1, diffuse to 0, and specular to 0
                     ambient: 1,
                     diffusivity: 0,
                     specularity: 0,
+                    texture: context.get_instance("assets/sunray.png", true)
                 })
             };
 
@@ -72,6 +71,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.time = 0;
             //this.colliders = [];
             this.nextSpawn = 5.0;
+
+            /* initialize flashlight (make it a class probably) */
             this.flashlight = {
                 angle: {
                     x: 0,
@@ -79,8 +80,21 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 },
                 centerToTip: [0, 0, 1],
                 playerToHand: [0.1, 0.1, -0.9],
-                longThin: [1, 1, 5]
+                longThin: [1, 1, 5],
+                colliders: []
             };
+            /* initialize flashlight colliders */
+            let rotAngle = 0;
+            let rotAxis = [1, 0, 0];
+            let distance = 0;
+            let radius = 0.1;
+            for (let i = 0; i < 20; i++) {
+                distance -= 1.5*radius;
+                radius *= 1.1;
+                const newSphere = new CollidingSphere ([distance, 1, 2], 0, [1, 0, 0], radius);
+                this.flashlight.colliders.push(newSphere);
+            }
+
         }
 
         make_control_panel() {
@@ -191,6 +205,15 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
 
             this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
+            
+            /* Get the origin of the flashlight tip.
+             * Get the direction of the flashlight
+             * Get the distance of the object from the flashlight origin, and then the distance of the object from the nearest point on the direction vector
+             * If SQRT of distance between obj & nearest point on vector is less than the radius of the cone there, then it's a collision */
+            let flashlightOrigin = this.flashlight.transform.times( Vec.of(0,0,0,1) );
+
+            /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
+
             /************************************* flashlight *************************************************/
 
             let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
@@ -237,6 +260,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for(var i =0; i<this.colliders.length; i++){
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t,this.playerPos);
+                this.colliders[i].damage();
             }
             // (Save scene 1 into an image)
             this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
@@ -249,13 +273,42 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         }
     };
 
-class Flashlight_Shader extends Phong_Shader {
+class Flashlight_Shader extends Shader {
+
+    shared_glsl_code() { return `
+    precision mediump float;
+    varying vec4 position;
+    varying vec4 center;
+    varying vec2 f_tex_coord;
+    `;}
+
+    vertex_glsl_code()           // ********* VERTEX SHADER (from assignment 2 EC) *********
+    { return `
+        attribute vec2 tex_coord;
+        attribute vec3 object_space_pos;
+        uniform mat4 model_transform;
+        uniform mat4 projection_camera_transform;
+
+        void main()
+        { center = model_transform * vec4( 0,0,0,1 );
+          position = model_transform * vec4(object_space_pos, 1.0);
+          f_tex_coord = tex_coord;
+        }`;
+    }
+    
     /*************************** FRAGMENT SHADER ****************************/
     fragment_glsl_code() {return `
     uniform sampler2D texture;
+    uniform vec4 shapeColor;
+    uniform float ambient, diffusivity, specularity;
     void main()
     {
-        gl_FragColor = vec4(1, 1, 1, 1);
+        vec4 tex_color = texture2D( texture, vec2(f_tex_coord.x, f_tex_coord.y) );
+
+        //float attenuation = sin ( 25.0 * distance( position, center ) );
+        //if( attenuation < 0.1 ) discard;
+
+        gl_FragColor = vec4( tex_color.xyz * ambient, shapeColor.w * tex_color.w);        
     }
     `;}
 }
