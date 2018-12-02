@@ -555,7 +555,6 @@ window.Flashlight_Shader = window.classes.Flashlight_Shader =
     void main()
     {
         vec4 tex_color = texture2D( texture, f_tex_coord.xy );
-        vec4 color = tex_color.xyzw;
 
         float alpha = tex_color.w * shapeColor.w;
         if (alpha < 0.7) discard;
