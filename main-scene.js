@@ -6,7 +6,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             const gl = context.gl;
 
-            new CollidingSphere(true, Mat4.translation([1, 2, 3]), true, true);
+            //new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
@@ -32,12 +32,13 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.materials = {
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 1}),
+                phong3: context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1), {ambient: 1, diffuse: 1}),
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.5,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-                'floor': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                'floor': context.get_instance(Texture_Tile).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
@@ -60,7 +61,17 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     diffuse: 1,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-                orig: context.get_instance(Shadow_Shader).material()
+                orig: context.get_instance(Shadow_Shader).material(),
+                floor_shadow: context.get_instance(Tiling_Shadow_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.3,
+                    texture: context.get_instance("assets/floor.jpg", false)
+                }),
+                wall_shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.4,
+                    texture: context.get_instance("assets/stone03b.jpg", false)
+                })
 
             };
 
@@ -90,11 +101,26 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 rotation: 0
             };
 
-            this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000),
-                new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000)];
+            this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50, 10, 50, 1), Color.of(1, 1, 1, 1), 100000),
+            ];
+
+            this.walls = []
+            for (let i = 0; i < 10; i++) {
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * 40 + 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * 40 + 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+            }
+            this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5)
+
         }
 
         make_control_panel() {
+            this.key_triggered_button("Forward", ["w"], () => this.forward = true, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => this.back = true, undefined, () => this.back = false);
+            this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
+            this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
+
             this.key_triggered_button("MoveForward", ["g"], () => {
                 this.logic.move(-1);
             });
@@ -116,9 +142,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 })
             );
 
+            /*this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
+            this.key_triggered_button("down", ["2"], () => this.movedown = true, undefined, () => this.movedown = false);
+            this.key_triggered_button("left", ["4"], () => this.moveleft = true, undefined, () => this.moveleft = false);
+            this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
+            this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
+            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);*/
+
             this.new_line();
             /*y = 0.8 is as far left, y=-0.8 is as far right*/
-            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*/
+            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*//*
             this.key_triggered_button("lightLeft", ["a"], () => {
                 if (this.flashlight.angle.y >= 0.8) {
                     return
@@ -142,14 +175,91 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     return;
                 }
                 this.flashlight.angle.x -= 0.01;
-            });
+            });*/
         }
 
         display(graphics_state, gl) {
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
-            let box1_transform = Mat4.identity();
+
+            if (this.forward) {
+                this.logic.move(-1)
+            }
+            if (this.back) {
+                this.logic.move(1)
+            }
+            if (this.left) {
+                this.logic.changeAngle(1)
+            }
+            if (this.right) {
+                this.logic.changeAngle(-1)
+            }
+
+            const x = Math.cos(t / 2)
+            const y = Math.sin(t / 2)
+
+            this.lights[0].transform = Mat4.look_at(Vec.of(120 * x, 40, 120 * y), Vec.of(40 * x, 0, 30 * y), Vec.of(0, 1, 0))
+            this.lights[0].position = Vec.of(50 * x, 0, 50 * y)
+
+            //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong2)
+            this.player_collider.translate(this.logic.posX, 0, this.logic.posZ)
+            for (let wall of this.walls) {
+
+                if (this.player_collider.collides(wall)) {
+                    console.log("hit")
+                    if (this.forward) {
+                        this.logic.move(1)
+                    }
+                    if (this.back) {
+                        this.logic.move(-1)
+                    }
+                    //if (this.left) { this.logic.changeAngle(-2) }
+                    //if (this.right) { this.logic.changeAngle(2) }
+                    //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
+                    break;
+                }
+
+            }
+
+            this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([-150, 0, 0])), this.materials.wall)
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].drawDepthBuffer(graphics_state, () => {
+                    for (let wall of this.walls) {
+                        wall.draw(graphics_state, this.shapes.box, this.materials.wall)
+                    }
+                })
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].drawOutputBuffer(graphics_state, () => {
+                    for (let wall of this.walls) {
+                        wall.draw(graphics_state, this.shapes.box, this.materials.wall_shadow)
+                    }
+                    this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor_shadow)
+                })
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].clearDepthBuffer();
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.shapes.box.draw(graphics_state, this.lights[i].transform, this.materials.phong2)
+            }
+
+            /*
+            for (let wallset of this.walls) {
+                for (let wall of wallset) {wall.draw(graphics_state, this.shapes.box, this.materials.wall)
+                }
+            }
+            */
+            /*let box1_transform = Mat4.identity();
             let box2_transform = Mat4.identity();
 
             let floor_transform = Mat4.identity();
@@ -164,8 +274,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
             this.rTime = t;
             box1_transform = box1_transform.times(Mat4.rotation(this.r1, Vec.of(1, 0, 0)));
-
-            /************************************* player camera *************************************************/
+            box2_transform = box2_transform.times(Mat4.rotation(this.r2, Vec.of(0, 1, 0)));
+*/
+            //PLAYER camera
             if (this.camera) {
                 this.playerM = Mat4.identity();
                 this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
@@ -199,8 +310,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             /* Save the flashlight origin position before making the flashlight long and thin */
             this.flashlight.collider_transform = this.flashlight.transform
-                .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.scale(Array(3).fill(0.01)) );
+                .times(Mat4.translation(this.flashlight.centerToTip))
+                .times(Mat4.scale(Array(3).fill(0.01)));
 
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
@@ -219,7 +330,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
 
             /* Compute where the collider spheres would be */
-            for (let i = 0; i < 20; i++)  {
+            for (let i = 0; i < 20; i++) {
                 this.flashlight.collider_transform = this.flashlight.collider_transform
                     .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
                     .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
@@ -238,17 +349,14 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                         console.log("hit ghost");
                     }
                 }
-                // this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, matTemp);
-
-                // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
-
+                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, matTemp);
             }
 
             /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
 
             /************************************* flashlight *************************************************/
 
-            let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
+            /*let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
             for (let i = 0; i < this.logic.grid.length; i++) {
                 let transform = grid_transform.times(Mat4.translation([0, i, 0]));
                 let row = this.logic.grid[i];
@@ -279,8 +387,14 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                         //graphics_state.camera_transform = desired_camera.map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 4 * dt));
                     }
                 }
-            }
+            }*/
             this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
+
+            //this.shapes.box.draw(graphics_state, Mat4.translation([5,0,0]), this.materials.phong.override({color: Color.of([1.0,0.0,0.0,1.0]), ambient: 1}))
+            /*this.colliders[1].translate(this.x, this.y, this.z)
+            if (this.colliders[1].collides(this.colliders[2])) {
+                this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong2)
+            }*/
 
             if (t > this.nextSpawn && t < this.nextSpawn + 1) {
                 if (this.colliders.length < 7) {
@@ -293,21 +407,21 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
             }
-
         }
     };
 
 window.Flashlight_Shader = window.classes.Flashlight_Shader =
-class Flashlight_Shader extends Phong_Shader
-{
-    shared_glsl_code(){return `
+    class Flashlight_Shader extends Phong_Shader {
+        shared_glsl_code() {
+            return `
         precision mediump float;
         varying float ambient, animation_time;
         varying vec2 f_tex_coord;
         varying vec4 position, center;
     `;}
 
-    vertex_glsl_code(){return `
+        vertex_glsl_code() {
+            return `
     attribute vec3 object_space_pos;
     attribute vec2 tex_coord;
 
@@ -322,9 +436,11 @@ class Flashlight_Shader extends Phong_Shader
 
         vec3 screen_space_pos = ( camera_model_transform * vec4(object_space_pos, 1.0) ).xyz;
     }
-    `;}
+    `;
+        }
 
-    fragment_glsl_code(){return `
+        fragment_glsl_code() {
+            return `
     uniform sampler2D texture;
     uniform vec4 shapeColor;
     void main()
@@ -337,6 +453,7 @@ class Flashlight_Shader extends Phong_Shader
 
         gl_FragColor = vec4( tex_color.xyz, alpha );
     }
-    `;}
-}
+    `;
+        }
+    }
 

@@ -139,7 +139,7 @@ window.Shadow_Phong_Shader = window.classes.Shadow_Phong_Shader =
           vec3 vertex_relative_to_light = positionFromLight.xyz / positionFromLight.w;
           vertex_relative_to_light = vertex_relative_to_light * 0.5 + 0.5;
           float shadowmap_dist = texture2D(shadowmap, vertex_relative_to_light.xy).r;
-          bool shadowed = vertex_relative_to_light.z > shadowmap_dist + 0.00002;
+          bool shadowed = vertex_relative_to_light.z > shadowmap_dist + 0.000001;
           
           if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
           { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
@@ -208,6 +208,8 @@ window.Shadow_Phong_Shader = window.classes.Shadow_Phong_Shader =
             
         }
 
+
+
         update_matrices(g_state, model_transform, gpu, gl)                                    // Helper function for sending matrices to GPU.
         {                                                   // (PCM will mean Projection * Camera * Model)
             let [P, C, M] = [g_state.projection_transform, g_state.camera_transform, model_transform],
@@ -227,6 +229,37 @@ window.Shadow_Phong_Shader = window.classes.Shadow_Phong_Shader =
             gl.uniformMatrix3fv(gpu.inverse_transpose_modelview_loc, false, Mat.flatten_2D_to_1D(inv_CM));
         }
     }
+
+class Tiling_Shadow_Shader extends Shadow_Phong_Shader {
+         fragment_glsl_code()           // ********* FRAGMENT SHADER *********
+        {                            // A fragment is a pixel that's overlapped by the current triangle.
+            // Fragments affect the final image or get discarded due to depth.
+            return `
+            uniform sampler2D shadowmap;
+        uniform sampler2D texture;
+        
+        void main()
+        { 
+          vec3 vertex_relative_to_light = positionFromLight.xyz / positionFromLight.w;
+          vertex_relative_to_light = vertex_relative_to_light * 0.5 + 0.5;
+          float shadowmap_dist = texture2D(shadowmap, vertex_relative_to_light.xy).r;
+          bool shadowed = vertex_relative_to_light.z > shadowmap_dist + 0.000001;
+          
+          if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
+          { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
+            return;
+          }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
+                                            // Phong shading is not to be confused with the Phong Reflection Model.
+          vec4 tex_color = texture2D( texture, f_tex_coord * 20.0 );                    // Sample the texture image in the correct place.
+          float s = 1.0;
+          if (shadowed) {s = 0.5;}                                                                            // Compute an initial (ambient) color:
+          if( USE_TEXTURE ) gl_FragColor = vec4( s * ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( N, shadowed );                   // Compute the final color with contributions from lights.
+        }`;
+        }
+}
+
 
 class Shadow_Shader extends Shader {
   constructor (gl) {
@@ -434,4 +467,26 @@ class Tex_Shader extends Shader {
       }
     `
   }
+}
+
+class Texture_Tile extends Phong_Shader
+{ fragment_glsl_code()           // ********* FRAGMENT SHADER ********* 
+    {
+      // TODO:  Modify the shader below (right now it's just the same fragment shader as Phong_Shader) for requirement #6.
+      return `
+        uniform sampler2D texture;
+        void main()
+        { if( GOURAUD || COLOR_NORMALS )    // Do smooth "Phong" shading unless options like "Gouraud mode" are wanted instead.
+          { gl_FragColor = VERTEX_COLOR;    // Otherwise, we already have final colors to smear (interpolate) across vertices.            
+            return;
+          }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
+                                            // Phong shading is not to be confused with the Phong Reflection Model.
+          
+          vec4 tex_color = texture2D( texture, f_tex_coord * 16.0);                         // Sample the texture image in the correct place.
+                                                                                      // Compute an initial (ambient) color:
+          if( USE_TEXTURE ) gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
+          else gl_FragColor = vec4( shapeColor.xyz * ambient, shapeColor.w );
+          gl_FragColor.xyz += phong_model_lights( N );                     // Compute the final color with contributions from lights.
+        }`;
+    }
 }

@@ -516,8 +516,12 @@ class Texture                                // The Texture class wraps a pointe
                                                                                 // will appear magnified. When it will appear shrunk,
           if( use_mipMap )                                                      // it's best to use tri-linear sampling of its mip maps:
             { gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.generateMipmap(gl.TEXTURE_2D); }
-          else                                                                        // We can also use the worst sampling method, to
-              gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );   // illustrate the difference that mip-mapping makes.
+          else {                                                                       // We can also use the worst sampling method, to
+              gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                 // illustrate the difference that mip-mapping makes.
+          }
           this.loaded = true;
         }
       if( bool_will_copy_to_GPU )                                               // Avoid a browser warning, and load the image file.

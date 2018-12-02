@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ced7473-2719-495f-bf41-f05e354d068c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/collision.js" beforeDir="false" afterPath="$PROJECT_DIR$/collision.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main-scene.js" beforeDir="false" afterPath="$PROJECT_DIR$/main-scene.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monster.js" beforeDir="false" afterPath="$PROJECT_DIR$/monster.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,9 +27,16 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main-scene.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5301">
-              <caret line="279" column="34" selection-start-line="279" selection-start-column="34" selection-end-line="279" selection-end-column="34" />
+            <state relative-caret-position="145">
+              <caret line="466" column="23" lean-forward="true" selection-start-line="466" selection-start-column="23" selection-end-line="466" selection-end-column="23" />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/shadow.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-8899" />
           </provider>
         </entry>
       </file>
@@ -130,13 +134,8 @@
         <subPane>
           <expand>
             <path>
-              <item name="shadowTag2" type="b2602c69:ProjectViewProjectNode" />
-              <item name="shadowTag2" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="shadowTag2" type="b2602c69:ProjectViewProjectNode" />
-              <item name="shadowTag2" type="462c0819:PsiDirectoryNode" />
-              <item name="assets" type="462c0819:PsiDirectoryNode" />
+              <item name="shadowTag3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="shadowTag3" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -476,11 +475,12 @@
       <workItem from="1543363810261" duration="3236000" />
       <workItem from="1543781219276" duration="2302000" />
       <workItem from="1543783566380" duration="312000" />
+      <workItem from="1543793237706" duration="106000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="38454000" />
+    <option name="totallyTimeSpent" value="38560000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -493,8 +493,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10939597" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.110738255" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -509,7 +510,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.329718" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.14164306" />
+      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.14164306" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.34924078" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
@@ -618,10 +619,15 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/shadow.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-8899" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main-scene.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5301">
-          <caret line="279" column="34" selection-start-line="279" selection-start-column="34" selection-end-line="279" selection-end-column="34" />
+        <state relative-caret-position="145">
+          <caret line="466" column="23" lean-forward="true" selection-start-line="466" selection-start-column="23" selection-end-line="466" selection-end-column="23" />
         </state>
       </provider>
     </entry>
