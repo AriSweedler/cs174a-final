@@ -427,26 +427,18 @@ class Flashlight_Shader extends Phong_Shader
 
     fragment_glsl_code(){return `
     uniform sampler2D texture;
-<<<<<<< HEAD
-=======
     uniform vec4 shapeColor;
->>>>>>> 40c96fe7cfe23b3a9f54d410db78d846bc2c7ba5
     void main()
     {
         vec4 tex_color = texture2D( texture, f_tex_coord.xy );
         vec4 color = tex_color.xyzw;
 
-<<<<<<< HEAD
-        if (tex_color.w < 0.7) discard;
-
-=======
         float alpha = tex_color.w * shapeColor.w;
         if (alpha < 0.7) discard;
 
         vec4 color = vec4( tex_color.xyz, alpha );
 
 
->>>>>>> 40c96fe7cfe23b3a9f54d410db78d846bc2c7ba5
         gl_FragColor = color;
     }
     `;}
