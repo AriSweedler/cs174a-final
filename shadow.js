@@ -85,10 +85,10 @@ class Shadow_Shader extends Shader {
         gl_FragColor = shadowmap_dist;
         
         if (in_shadow(positionFromLight[0])) {
-          gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+          gl_FragColor = vec4(0.4, 0.4, 0.4, 1.0);
         }
         else {
-          gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+          gl_FragColor = vec4(0.5,0.3,0.5,1.0);
         }
 
         //gl_FragColor = texture2D(shadowmap, vertex_relative_to_light.xy);

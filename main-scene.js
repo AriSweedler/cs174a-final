@@ -57,7 +57,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             //this.colliders = [];
             this.nextSpawn = 5.0;
 
-            this.lights = [ new Light( Mat4.look_at(Vec.of(6, 0, 12), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(0,0,6), Color.of( 1, 1, 1, 1 ), 1000 ) ];
+            this.lights = [ new Light( Mat4.look_at(Vec.of(15, 0, 15), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(0,0,6), Color.of( 1, 1, 1, 1 ), 1000 ) ];
         }
 
         make_control_panel() {
@@ -116,7 +116,11 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             let temp = graphics_state.camera_transform;
             graphics_state.camera_transform = light
             this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([10,10,1])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([8,8,1])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong2)
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             graphics_state.camera_transform = temp
 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -126,9 +130,14 @@ gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 gl.bindTexture(gl.TEXTURE_2D, depth_buffer)
             this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([10,10,1])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([8,8,1])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
+
             //gl.bindTexture(gl.TEXTURE_2D, null)
-gl.bindTexture(gl.TEXTURE_2D, null)
+//gl.bindTexture(gl.TEXTURE_2D, null)
             this.shapes.box.draw(graphics_state, Mat4.inverse(light), this.materials.phong2)
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             
