@@ -50,7 +50,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
                 }),
-                'flashlight': context.get_instance(Texture_Shader).material(Color.of(0, 0, 0, 1), {
+                'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 0.9), {
                     // ambient to 1, diffuse to 0, and specular to 0
                     ambient: 1,
                     diffusivity: 0,
@@ -315,23 +315,26 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.flashlight.collider_transform = this.flashlight.transform
                 .times( Mat4.translation(this.flashlight.centerToTip) )
                 .times( Mat4.scale(Array(3).fill(0.01)) );
-            
+
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
                 .times(Mat4.translation(this.flashlight.centerToTip))
                 .times(Mat4.scale(this.flashlight.longThin))
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
 
-            this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
+            for (let i = 0; i < 5; i++) {
+                this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
+                this.flashlight.transform = this.flashlight.transform.times( Mat4.scale(Array(3).fill(0.9)) );
+            }
 
             /* Compute where the collider spheres would be */
             for (let i = 0; i < 20; i++)  {
-                // this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
                 this.flashlight.collider_transform = this.flashlight.collider_transform
                     .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
                     .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
+                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
                 let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
-                
+
                 // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
             }
 
@@ -398,88 +401,43 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
     };
 
 window.Flashlight_Shader = window.classes.Flashlight_Shader =
-    class Flashlight_Shader extends Shader              // Subclasses of Shader each store and manage a complete GPU program.
-    {
-        material() {
-            return {shader: this}
-        }      // Materials here are minimal, without any settings.
-        map_attribute_name_to_buffer_name(name)       // The shader will pull single entries out of the vertex arrays, by their data fields'
-        {                                             // names.  Map those names onto the arrays we'll pull them from.  This determines
-            // which kinds of Shapes this Shader is compatible with.  Thanks to this function,
-            // Vertex buffers in the GPU can get their pointers matched up with pointers to
-            // attribute names in the GPU.  Shapes and Shaders can still be compatible even
-            // if some vertex data feilds are unused.
-            return {object_space_pos: "positions"}[name];      // Use a simple lookup table.
-        }
-
-        // Define how to synchronize our JavaScript's variables to the GPU's:
-        update_GPU(g_state, model_transform, material, gpu = this.g_addrs, gl = this.gl) {
-            const proj_camera = g_state.projection_transform.times(g_state.camera_transform);
-            // Send our matrices to the shader programs:
-            gl.uniformMatrix4fv(gpu.model_transform_loc, false, Mat.flatten_2D_to_1D(model_transform.transposed()));
-            gl.uniformMatrix4fv(gpu.projection_camera_transform_loc, false, Mat.flatten_2D_to_1D(proj_camera.transposed()));
-        }
-
-        shared_glsl_code()            // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
-        {
-            return `precision mediump float;
-                varying vec4 position;
-                varying vec4 center;
-                varying vec2 f_tex_coord;
-                uniform float ambient, diffusivity, specularity, smoothness, animation_time;
-                uniform vec4 shapeColor;
-        `;
-        }
-
-        vertex_glsl_code()           // ********* VERTEX SHADER *********
-        {
-            return `
-        attribute vec3 object_space_pos;
-        uniform mat4 model_transform;
-        uniform mat4 projection_camera_transform;
-
-        void main()
-        { center = model_transform * vec4( 0,0,0,1 );
-            position = model_transform * vec4(object_space_pos, 1.0);
-            gl_Position = projection_camera_transform * position;            // The vertex's final resting place (in NDCS).
-        }`;
-        }
-
-        fragment_glsl_code()           // ********* FRAGMENT SHADER *********
-        {
-            return `
-        uniform sampler2D texture;
-        void main()
-        {
-            vec4 tex_color = texture2D( texture, f_tex_coord.xy );
-            vec4 color = tex_color.xyzw;
-            
-            if (tex_color.w < 0.2) discard;
-
-            // float dist = sin( distance( position, center ) );
-            gl_FragColor = color;
-        }`;
-        }
-    }
-
-class Texture_Shader extends Phong_Shader
+class Flashlight_Shader extends Phong_Shader
 {
-  /* ********* FRAGMENT SHADER ********* */
-  fragment_glsl_code()
-  {
-    /* Do smooth "Phong" shading unless options like "Gouraud mode" are wanted
-     * instead. Otherwise, we already have final colors to smear (interpolate)
-     * across vertices.*/
-    return `
-      uniform sampler2D texture;
-      void main()
-      {
+    shared_glsl_code(){return `
+        precision mediump float;
+        varying vec2 f_tex_coord;
+    `;}
+
+    vertex_glsl_code(){return `
+    attribute vec3 object_space_pos;
+    attribute vec2 tex_coord;
+
+    uniform mat4 camera_model_transform, projection_camera_model_transform;
+
+    void main()
+    {
+        gl_Position = projection_camera_model_transform * vec4(object_space_pos, 1.0);
+        f_tex_coord = tex_coord;
+
+        vec3 screen_space_pos = ( camera_model_transform * vec4(object_space_pos, 1.0) ).xyz;
+    }
+    `;}
+
+    fragment_glsl_code(){return `
+    uniform sampler2D texture;
+    uniform vec4 shapeColor;
+    void main()
+    {
         vec4 tex_color = texture2D( texture, f_tex_coord.xy );
 
-        if (tex_color.w < 0.1) discard;
+        float alpha = tex_color.w * shapeColor.w;
+        if (alpha < 0.7) discard;
 
-        gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w );
-      }`;
-  }
+        vec4 color = vec4( tex_color.xyz, alpha );
+
+
+        gl_FragColor = color;
+    }
+    `;}
 }
 
