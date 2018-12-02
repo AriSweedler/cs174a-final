@@ -82,7 +82,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.logic.changeAngle(35);
             this.camera = true;
             this.time = 0;
-            //this.colliders = [];
             this.nextSpawn = 5.0;
 
             /* initialize flashlight (make it a class probably) */
@@ -94,19 +93,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 centerToTip: [0, 0, 1],
                 playerToHand: [0.1, 0.1, -0.9],
                 longThin: [1, 1, 5],
+                collider_transform: null,
                 colliders: []
             };
-            /* initialize flashlight colliders */
-            let rotAngle = 0;
-            let rotAxis = [1, 0, 0];
-            let distance = 0;
-            let radius = 0.1;
-            for (let i = 0; i < 20; i++) {
-                distance -= 1.5 * radius;
-                radius *= 1.1;
-                const newSphere = new CollidingSphere([distance, 1, 2], 0, [1, 0, 0], radius);
-                this.flashlight.colliders.push(newSphere);
-            }
 
             this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000),
                 new Light(gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50, 0, 50, 1), Color.of(1, 1, 1, 1), 1000)];
@@ -322,6 +311,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times(Mat4.rotation(this.flashlight.angle.y, [0, 1, 0]))
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
 
+            /* Save the flashlight origin position before making the flashlight long and thin */
+            this.flashlight.collider_transform = this.flashlight.transform
+                .times( Mat4.translation(this.flashlight.centerToTip) )
+                .times( Mat4.scale(Array(3).fill(0.01)) );
+            
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
                 .times(Mat4.translation(this.flashlight.centerToTip))
@@ -330,11 +324,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
 
-            /* Get the origin of the flashlight tip.
-             * Get the direction of the flashlight
-             * Get the distance of the object from the flashlight origin, and then the distance of the object from the nearest point on the direction vector
-             * If SQRT of distance between obj & nearest point on vector is less than the radius of the cone there, then it's a collision */
-            let flashlightOrigin = this.flashlight.transform.times(Vec.of(0, 0, 0, 1));
+            /* Compute where the collider spheres would be */
+            for (let i = 0; i < 20; i++)  {
+                this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
+                this.flashlight.collider_transform = this.flashlight.collider_transform
+                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
+                    .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
+                let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
+                
+                console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
+            }
 
             /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
 
@@ -454,9 +453,11 @@ window.Flashlight_Shader = window.classes.Flashlight_Shader =
         {
             vec4 tex_color = texture2D( texture, f_tex_coord.xy );
             vec4 color = tex_color.xyzw;
+            
+            if (tex_color.w < 0.2) discard;
 
-            float dist = sin( distance( position, center ) );
-            gl_FragColor = dist * color;
+            // float dist = sin( distance( position, center ) );
+            gl_FragColor = color;
         }`;
         }
     }
