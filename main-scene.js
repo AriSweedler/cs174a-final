@@ -45,7 +45,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.5,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-                'floor': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                'floor': context.get_instance(Texture_Tile).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
@@ -63,7 +63,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             };
 
-            this.rotateFlag = false;
+            this.rotateFlag = true;
             this.r1 = 0;
             this.r2 = 0;
             this.rTime = 0;
@@ -102,10 +102,18 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 	    this.lights = [ new Light( gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50,0,50,1), Color.of( 1, 1, 1, 1 ), 1000 ),
                             new Light( gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50,0,50,1), Color.of( 1, 1, 1, 1 ), 1000 ) ];
 
-
+            this.walls = []
+            for (let i = 0; i < 150; i++) {
+                this.walls.push(Mat4.rotation(Math.random() * 6, Vec.of(0,1,0)).times(Mat4.translation([Math.random() * 800 - 400, 0, Math.random() * 800 - 400])))
+            }
         }
 
         make_control_panel() {
+            this.key_triggered_button("Forward", ["8"], () => this.forward = true, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["2"], () => this.back = true, undefined, () => this.back = false);
+            this.key_triggered_button("Turn Left", ["4"], () => this.left = true, undefined, () => this.left = false);
+            this.key_triggered_button("Turn Right", ["6"], () => this.right = true, undefined, () => this.right = false);
+
             this.key_triggered_button("MoveForward", ["g"], () => {
                 this.logic.move(-1);
             });
@@ -157,7 +165,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         }
 
         display(graphics_state, gl) {
-
+            if (this.forward) { this.logic.move(-2) }
+            if (this.back) { this.logic.move(2) }
+            if (this.left) { this.logic.changeAngle(2) }
+            if (this.right) { this.logic.changeAngle(-2) }
 	/*  SHADOWS TEST STUFF
             graphics_state.light = this.lights[0]
             graphics_state.depth_buffer = this.depth_buffer
@@ -207,7 +218,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[0].transform), this.materials.phong2)
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[1].transform), this.materials.phong2)
       
-            /*//gl.activeTexture(gl.TEXTURE0)
+            /*gl.activeTexture(gl.TEXTURE0)
             //this.shapes.player.draw(graphics_state, Mat4.translation([x,y,1]), this.materials.phong2)
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
             gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
@@ -250,7 +261,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);*/
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
             
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             
@@ -259,7 +270,19 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
-            let box1_transform = Mat4.identity();
+
+            this.shapes.box.draw(graphics_state, Mat4.scale([500,1,500]).times(Mat4.translation([0, -10, 0])), this.materials.floor)            
+            this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
+            this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
+            this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
+            this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([-150, 0, 0])), this.materials.wall)
+
+            for (let wall of this.walls) {
+                this.shapes.box.draw(graphics_state, wall.times(Mat4.scale([16,30,3])), this.materials.wall)
+           
+            }
+            
+            /*let box1_transform = Mat4.identity();
             let box2_transform = Mat4.identity();
 
             let floor_transform = Mat4.identity();
@@ -276,7 +299,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.rTime = t;
             box1_transform = box1_transform.times(Mat4.rotation(this.r1, Vec.of(1, 0, 0)));
             box2_transform = box2_transform.times(Mat4.rotation(this.r2, Vec.of(0, 1, 0)));
-
+*/
             //PLAYER camera
             if (this.camera) {
                 this.playerM = Mat4.identity();
@@ -287,7 +310,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             } else if (t > this.time + 1) {
                 graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
             }
-
+            
             /************************************* flashlight *************************************************/
             /* Draw light coming from flashlight (player's hand) */
             this.flashlight.transform = this.playerM.times( Mat4.translation(this.flashlight.playerToHand) );
@@ -322,7 +345,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             /************************************* flashlight *************************************************/
 
-            let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
+            /*let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
             for (let i = 0; i < this.logic.grid.length; i++) {
                 let transform = grid_transform.times(Mat4.translation([0, i, 0]));
                 let row = this.logic.grid[i];
@@ -353,7 +376,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                         //graphics_state.camera_transform = desired_camera.map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 4 * dt));
                     }
                 }
-            }
+            }*/
             this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
 
             if(t > this.nextSpawn && t < this.nextSpawn+1){
