@@ -39,8 +39,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.logic = new Logic();
             this.materials = {
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
-                phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
-                phong3:context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1),{ambient: 1, diffuse: 1}),
+                phong2: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 1}),
+                phong3: context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1), {ambient: 1, diffuse: 1}),
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.5,
@@ -70,8 +70,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     diffuse: 1,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-		tex: context.get_instance(Tex_Shader).material(),
-		shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 0.5, diffuse: 1, texture: context.get_instance("assets/stone03b.jpg", false)}),
                 orig: context.get_instance(Shadow_Shader).material(),
                 floor_shadow: context.get_instance(Tiling_Shadow_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
@@ -111,22 +109,22 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 colliders: []
             };
 
-	    this.lights = [ new Light( gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50,10,50,1), Color.of( 1, 1, 1, 1 ), 100000 ),
-                         ];
+            this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50, 10, 50, 1), Color.of(1, 1, 1, 1), 100000),
+            ];
 
             this.walls = []
             for (let i = 0; i < 10; i++) {
-                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * 40 + 5], [1,4,1], Math.random() * 7, [0,1,0]))
-                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * 40 + 5], [1,4,1], Math.random() * 7, [0,1,0]))
-                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * -40 - 5], [1,4,1], Math.random() * 7, [0,1,0]))
-                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * -40 - 5], [1,4,1], Math.random() * 7, [0,1,0]))
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * 40 + 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * 40 + 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
             }
 
             /*for (let i = 0; i < 10; i++) {
                 this.walls.push(new CollidingCube([Math.random() * 800 - 400, 0, Math.random() * 800 - 400], [16,32,16], Math.floor(Math.random() * 4) * 0.5 * Math.PI, [0,1,0]))
                 //this.walls.push(Mat4.rotation(Math.random() * 6, Vec.of(0,1,0)).times(Mat4.translation([Math.random() * 800 - 400, 0, Math.random() * 800 - 400])))
             }*/
-            this.player_collider = new CollidingSphere([0,0,0], 0, [1,0,0], 0.5)
+            this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5)
 
         }
 
@@ -198,10 +196,18 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
 
-            if (this.forward) { this.logic.move(-1) }
-            if (this.back) { this.logic.move(1) }
-            if (this.left) { this.logic.changeAngle(1) }
-            if (this.right) { this.logic.changeAngle(-1) }
+            if (this.forward) {
+                this.logic.move(-1)
+            }
+            if (this.back) {
+                this.logic.move(1)
+            }
+            if (this.left) {
+                this.logic.changeAngle(1)
+            }
+            if (this.right) {
+                this.logic.changeAngle(-1)
+            }
 
             const x = Math.cos(t / 2)
             const y = Math.sin(t / 2)
@@ -213,16 +219,20 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.player_collider.translate(this.logic.posX, 0, this.logic.posZ)
             for (let wall of this.walls) {
 
-                   if (this.player_collider.collides(wall)) {
-                       console.log("hit")
-                       if (this.forward) { this.logic.move(1) }
-                       if (this.back) { this.logic.move(-1) }
-                        //if (this.left) { this.logic.changeAngle(-2) }
-                        //if (this.right) { this.logic.changeAngle(2) }
-                        //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
-                        break;
-                    } 
-               
+                if (this.player_collider.collides(wall)) {
+                    console.log("hit")
+                    if (this.forward) {
+                        this.logic.move(1)
+                    }
+                    if (this.back) {
+                        this.logic.move(-1)
+                    }
+                    //if (this.left) { this.logic.changeAngle(-2) }
+                    //if (this.right) { this.logic.changeAngle(2) }
+                    //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
+                    break;
+                }
+
             }
 
             /*  SHADOWS TEST STUFF
@@ -323,9 +333,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             
             */
 
-            
 
-            this.shapes.box.draw(graphics_state, Mat4.scale([50,1,50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)            
+            this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
             //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
@@ -344,7 +353,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     for (let wall of this.walls) {
                         wall.draw(graphics_state, this.shapes.box, this.materials.wall_shadow)
                     }
-                    this.shapes.box.draw(graphics_state, Mat4.scale([50,1,50]).times(Mat4.translation([0, -3, 0])), this.materials.floor_shadow)
+                    this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor_shadow)
                 })
             }
 
@@ -400,7 +409,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             } else if (t > this.time + 1) {
                 graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
             }
-            
+
             /************************************* flashlight *************************************************/
             /* Draw light coming from flashlight (player's hand) */
             this.flashlight.transform = this.playerM.times(Mat4.translation(this.flashlight.playerToHand));
@@ -419,8 +428,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             /* Save the flashlight origin position before making the flashlight long and thin */
             this.flashlight.collider_transform = this.flashlight.transform
-                .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.scale(Array(3).fill(0.01)) );
+                .times(Mat4.translation(this.flashlight.centerToTip))
+                .times(Mat4.scale(Array(3).fill(0.01)));
 
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
@@ -430,17 +439,17 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             for (let i = 0; i < 5; i++) {
                 this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
-                this.flashlight.transform = this.flashlight.transform.times( Mat4.scale(Array(3).fill(0.9)) );
+                this.flashlight.transform = this.flashlight.transform.times(Mat4.scale(Array(3).fill(0.9)));
             }
 
             /* Compute where the collider spheres would be */
-            for (let i = 0; i < 20; i++)  {
+            for (let i = 0; i < 20; i++) {
                 this.flashlight.collider_transform = this.flashlight.collider_transform
-                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
-                    .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
+                    .times(Mat4.translation([0, 0, -3])) //move the next sphere forwards
+                    .times(Mat4.scale(Array(3).fill(1.3))); //make the next sphere bigger
                 this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
 
-                let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
+                let colliderOrigin = this.flashlight.collider_transform.times(Vec.of(0, 0, 0, 1));
 
                 // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
             }
@@ -514,14 +523,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
     };
 
 window.Flashlight_Shader = window.classes.Flashlight_Shader =
-class Flashlight_Shader extends Phong_Shader
-{
-    shared_glsl_code(){return `
+    class Flashlight_Shader extends Phong_Shader {
+        shared_glsl_code() {
+            return `
         precision mediump float;
         varying vec2 f_tex_coord;
-    `;}
+    `;
+        }
 
-    vertex_glsl_code(){return `
+        vertex_glsl_code() {
+            return `
     attribute vec3 object_space_pos;
     attribute vec2 tex_coord;
 
@@ -534,9 +545,11 @@ class Flashlight_Shader extends Phong_Shader
 
         vec3 screen_space_pos = ( camera_model_transform * vec4(object_space_pos, 1.0) ).xyz;
     }
-    `;}
+    `;
+        }
 
-    fragment_glsl_code(){return `
+        fragment_glsl_code() {
+            return `
     uniform sampler2D texture;
     uniform vec4 shapeColor;
     void main()
@@ -552,6 +565,7 @@ class Flashlight_Shader extends Phong_Shader
 
         gl_FragColor = color;
     }
-    `;}
-}
+    `;
+        }
+    }
 
