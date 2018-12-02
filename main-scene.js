@@ -3,7 +3,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         constructor(context, control_box)     // The scene begins by requesting the camera, shapes, and materials it will need.
         {
             super(context, control_box);    // First, include a secondary Scene that provides movement controls:
-            
+
             new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
@@ -29,10 +29,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
-            };  
+            };
             this.colliders =  [new Monster([0,0,0])];
-         
-           
+
+
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
             this.materials = {
@@ -113,10 +113,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("switchCamera", ["x"], () => {
                 this.camera = !this.camera;
             });
-            this.result_img = this.control_panel.appendChild( 
+            this.result_img = this.control_panel.appendChild(
                 Object.assign( document.createElement( "img" ), {
                     style:"width:200px; height:" + 200 * this.aspect_ratio + "px"
-                } ) 
+                } )
             );
 
             this.new_line();
@@ -205,7 +205,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
 
             this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
-            
+
             /* Get the origin of the flashlight tip.
              * Get the direction of the flashlight
              * Get the distance of the object from the flashlight origin, and then the distance of the object from the nearest point on the direction vector
@@ -273,42 +273,56 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         }
     };
 
-class Flashlight_Shader extends Shader {
-
-    shared_glsl_code() { return `
-    precision mediump float;
-    varying vec4 position;
-    varying vec4 center;
-    varying vec2 f_tex_coord;
-    `;}
-
-    vertex_glsl_code()           // ********* VERTEX SHADER (from assignment 2 EC) *********
+window.Flashlight_Shader = window.classes.Flashlight_Shader =
+class Flashlight_Shader extends Shader              // Subclasses of Shader each store and manage a complete GPU program.
+{ material() { return { shader: this } }      // Materials here are minimal, without any settings.
+    map_attribute_name_to_buffer_name( name )       // The shader will pull single entries out of the vertex arrays, by their data fields'
+    {                                             // names.  Map those names onto the arrays we'll pull them from.  This determines
+                                                    // which kinds of Shapes this Shader is compatible with.  Thanks to this function,
+                                                    // Vertex buffers in the GPU can get their pointers matched up with pointers to
+                                                    // attribute names in the GPU.  Shapes and Shaders can still be compatible even
+                                                    // if some vertex data feilds are unused.
+        return { object_space_pos: "positions" }[ name ];      // Use a simple lookup table.
+    }
+    // Define how to synchronize our JavaScript's variables to the GPU's:
+    update_GPU( g_state, model_transform, material, gpu = this.g_addrs, gl = this.gl )
+        { const proj_camera = g_state.projection_transform.times( g_state.camera_transform );
+                                                                                        // Send our matrices to the shader programs:
+        gl.uniformMatrix4fv( gpu.model_transform_loc,             false, Mat.flatten_2D_to_1D( model_transform.transposed() ) );
+        gl.uniformMatrix4fv( gpu.projection_camera_transform_loc, false, Mat.flatten_2D_to_1D(     proj_camera.transposed() ) );
+        }
+    shared_glsl_code()            // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
+    { return `precision mediump float;
+                varying vec4 position;
+                varying vec4 center;
+                varying vec2 f_tex_coord;
+                uniform float ambient, diffusivity, specularity, smoothness, animation_time;
+                uniform vec4 shapeColor;
+        `;
+    }
+    vertex_glsl_code()           // ********* VERTEX SHADER *********
     { return `
-        attribute vec2 tex_coord;
         attribute vec3 object_space_pos;
         uniform mat4 model_transform;
         uniform mat4 projection_camera_transform;
 
         void main()
         { center = model_transform * vec4( 0,0,0,1 );
-          position = model_transform * vec4(object_space_pos, 1.0);
-          f_tex_coord = tex_coord;
+            position = model_transform * vec4(object_space_pos, 1.0);
+            gl_Position = projection_camera_transform * position;            // The vertex's final resting place (in NDCS).
         }`;
     }
-    
-    /*************************** FRAGMENT SHADER ****************************/
-    fragment_glsl_code() {return `
-    uniform sampler2D texture;
-    uniform vec4 shapeColor;
-    uniform float ambient, diffusivity, specularity;
-    void main()
-    {
-        vec4 tex_color = texture2D( texture, vec2(f_tex_coord.x, f_tex_coord.y) );
+    fragment_glsl_code()           // ********* FRAGMENT SHADER *********
+    { return `
+        uniform sampler2D texture;
+        void main()
+        {
+            vec4 tex_color = texture2D( texture, f_tex_coord.xy );
+            vec4 color = tex_color.xyzw;
 
-        //float attenuation = sin ( 25.0 * distance( position, center ) );
-        //if( attenuation < 0.1 ) discard;
-
-        gl_FragColor = vec4( tex_color.xyz * ambient, shapeColor.w * tex_color.w);        
+            float dist = sin( distance( position, center ) );
+            gl_FragColor = dist * color;
+        }`;
     }
-    `;}
 }
+
