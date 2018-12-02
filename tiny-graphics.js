@@ -237,6 +237,7 @@ class Vertex_Buffer           // To use Vertex_Buffer, make a subclass of it tha
     {                                        // Send the completed vertex and index lists to their own buffers in the graphics card.
       for( let n of selection_of_arrays )    // Optional arguments allow calling this again to overwrite some or all GPU buffers as needed.
         { let buffer = this.array_names_mapping_to_WebGLBuffers[n] = gl.createBuffer();
+          console.log(n)
           gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
           gl.bufferData( gl.ARRAY_BUFFER, Mat.flatten_2D_to_1D( this[n] ), gl.STATIC_DRAW );
         }
@@ -247,6 +248,7 @@ class Vertex_Buffer           // To use Vertex_Buffer, make a subclass of it tha
         gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint32Array( this.indices ), gl.STATIC_DRAW );
       }
       this.gl = gl;
+      gl.getExtension('WEBGL_depth_texture')
     }
   execute_shaders( gl, type )     // Draws this shape's entire vertex buffer.
     { if( this.indexed )
@@ -360,7 +362,85 @@ class Graphics_State                                            // Stores things
 
 window.Light = window.tiny_graphics.Light =
 class Light                                                     // The properties of one light in the scene (Two 4x1 Vecs and a scalar)
-{ constructor( position, color, size ) { Object.assign( this, { position, color, attenuation: 1/size } ); }  };
+{ constructor( gl, transform, position, color, size ) { Object.assign( this, { gl, transform, position, color, attenuation: 1/size } );
+
+  const width = 1024
+  const height = 1024
+  this.color_buffer = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, this.color_buffer);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                              gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  this.depth_buffer = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0,
+                              gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  this.frame_buffer = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.color_buffer, 0);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+
+  } 
+
+  drawDepthBuffer(graphics_state, drawFunction) {
+    const gl = this.gl
+
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
+    let temp = graphics_state.camera_transform;
+    graphics_state.camera_transform = this.transform
+
+    drawFunction()
+
+    graphics_state.camera_transform = temp
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  drawOutputBuffer(graphics_state, drawFunction) {
+    const gl = this.gl
+    graphics_state.light = this
+
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
+
+    drawFunction()
+    
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+
+    graphics_state.light = undefined
+  }
+
+  clearDepthBuffer() {
+    const gl = this.gl
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+    gl.deleteTexture(this.depth_buffer)
+    this.depth_buffer = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0,
+                                gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+  }
+
+ };
 
 window.Color = window.tiny_graphics.Color =
 class Color extends Vec { }    // Just an alias.  Colors are special 4x1 vectors expressed as ( red, green, blue, opacity ) each from 0 to 1.
@@ -386,6 +466,7 @@ class Graphics_Addresses    // For organizing communication with the GPU for Sha
                                                     enabled: true, type: gl.FLOAT,
                                                     normalized: false, stride: 0, pointer: 0 };
     } 
+    console.log(this.shader_attributes)
   }
 }
 
@@ -471,7 +552,7 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
         || w.mozRequestAnimationFrame || w.oRequestAnimationFrame || w.msRequestAnimationFrame
         || function( callback, element ) { w.setTimeout(callback, 1000/60);  } )( window );
     }
-  set_size( dimensions = [ 1080, 600 ] )                // This function allows you to re-size the canvas anytime.  
+  set_size( dimensions = [ 1024, 1024 ] )                // This function allows you to re-size the canvas anytime.  
     { const [ width, height ] = dimensions;             // To work, it must change the size in CSS, wait for style to re-flow, 
       this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
       this.canvas.style[ "height" ] = height + "px";     
@@ -497,7 +578,7 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
       this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);        // Clear the canvas's pixels and z-buffer.
      
       for( let live_string of document.querySelectorAll(".live_string") ) live_string.onload( live_string );
-      for ( let s of this.scene_components ) s.display( this.globals.graphics_state );            // Draw each registered animation.
+      for ( let s of this.scene_components ) s.display( this.globals.graphics_state, this.gl );            // Draw each registered animation.
       this.event = window.requestAnimFrame( this.render.bind( this ) );   // Now that this frame is drawn, request that render() happen 
     }                                                                     // again as soon as all other web page events are processed.
 }
@@ -555,7 +636,7 @@ class Scene_Component       // The Scene_Component superclass is the base class 
           this.shapes[s].copy_onto_graphics_card( webgl_manager.gl );
         }
     }                                                          // You have to override the following functions to use class Scene_Component.
-  make_control_panel(){}  display( graphics_state ){}  show_explanation( document_section ){}
+  make_control_panel(){}  display( graphics_state, gl ){}  show_explanation( document_section ){}
 }
 
 
@@ -566,7 +647,7 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
 
       const rules = [ ".canvas-widget { width: 1080px; background: DimGray }",
                       ".canvas-widget * { font-family: monospace }",
-                      ".canvas-widget canvas { width: 1080px; height: 600px; margin-bottom:-3px }",
+                      ".canvas-widget canvas { width: 1024px; height: 1024px; margin-bottom:-3px }",
                       ".canvas-widget div { background: white }",
                       ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
                       ".canvas-widget table.control-box { width: 1080px; border:0; margin:0; max-height:380px; transition:.5s; overflow-y:scroll; background:DimGray }",
