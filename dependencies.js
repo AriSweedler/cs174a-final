@@ -673,6 +673,7 @@ window.Phong_Shader = window.classes.Phong_Shader =
                 gpu.shader_attributes["tex_coord"].enabled = false;
             }
 
+/*
             if (!g_state.lights.length) return;
             var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
             for (var i = 0; i < 4 * g_state.lights.length; i++) {
@@ -682,7 +683,7 @@ window.Phong_Shader = window.classes.Phong_Shader =
             }
             gl.uniform4fv(gpu.lightPosition_loc, lightPositions_flattened);
             gl.uniform4fv(gpu.lightColor_loc, lightColors_flattened);
-            gl.uniform1fv(gpu.attenuation_factor_loc, lightAttenuations_flattened);
+            gl.uniform1fv(gpu.attenuation_factor_loc, lightAttenuations_flattened);*/
         }
 
         update_matrices(g_state, model_transform, gpu, gl)                                    // Helper function for sending matrices to GPU.

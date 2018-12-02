@@ -362,7 +362,85 @@ class Graphics_State                                            // Stores things
 
 window.Light = window.tiny_graphics.Light =
 class Light                                                     // The properties of one light in the scene (Two 4x1 Vecs and a scalar)
-{ constructor( transform, position, color, size ) { Object.assign( this, { transform, position, color, attenuation: 1/size } ); }  };
+{ constructor( gl, transform, position, color, size ) { Object.assign( this, { gl, transform, position, color, attenuation: 1/size } );
+
+  const width = 1024
+  const height = 1024
+  this.color_buffer = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, this.color_buffer);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                              gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  this.depth_buffer = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0,
+                              gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  this.frame_buffer = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.color_buffer, 0);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+
+  } 
+
+  drawDepthBuffer(graphics_state, drawFunction) {
+    const gl = this.gl
+
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
+    let temp = graphics_state.camera_transform;
+    graphics_state.camera_transform = this.transform
+
+    drawFunction()
+
+    graphics_state.camera_transform = temp
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  drawOutputBuffer(graphics_state, drawFunction) {
+    const gl = this.gl
+    graphics_state.light = this
+
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
+
+    drawFunction()
+    
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+
+    graphics_state.light = undefined
+  }
+
+  clearDepthBuffer() {
+    const gl = this.gl
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+    gl.deleteTexture(this.depth_buffer)
+    this.depth_buffer = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0,
+                                gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+  }
+
+ };
 
 window.Color = window.tiny_graphics.Color =
 class Color extends Vec { }    // Just an alias.  Colors are special 4x1 vectors expressed as ( red, green, blue, opacity ) each from 0 to 1.

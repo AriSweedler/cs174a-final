@@ -146,7 +146,7 @@ window.Shadow_Phong_Shader = window.classes.Shadow_Phong_Shader =
             return;
           }                                 // If we get this far, calculate Smooth "Phong" Shading as opposed to Gouraud Shading.
                                             // Phong shading is not to be confused with the Phong Reflection Model.
-          vec4 tex_color = texture2D( texture, f_tex_coord );                         // Sample the texture image in the correct place.
+          vec4 tex_color = texture2D( texture, f_tex_coord );                    // Sample the texture image in the correct place.
           float s = 1.0;
           if (shadowed) {s = 0.5;}                                                                            // Compute an initial (ambient) color:
           if( USE_TEXTURE ) gl_FragColor = vec4( s * ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w ); 
@@ -178,13 +178,14 @@ window.Shadow_Phong_Shader = window.classes.Shadow_Phong_Shader =
                 gl.uniform1f(gpu.USE_TEXTURE_loc, 1);
                 gl.activeTexture(gl.TEXTURE1)
                 gl.bindTexture(gl.TEXTURE_2D, material.texture.id);
+                gl.activeTexture(gl.TEXTURE0)
             }
             else {
                 gl.uniform1f(gpu.USE_TEXTURE_loc, 0);
                 gpu.shader_attributes["tex_coord"].enabled = false;
             }
 
-            if (!g_state.lights.length) return;
+            if (!g_state.light) return;
             var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
             for (var i = 0; i < 4; i++) {
                 lightPositions_flattened.push(g_state.light.position[i % 4]);
