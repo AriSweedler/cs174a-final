@@ -207,7 +207,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[0].transform), this.materials.phong2)
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[1].transform), this.materials.phong2)
       
-            /*//gl.activeTexture(gl.TEXTURE0)
+            gl.activeTexture(gl.TEXTURE0)
             //this.shapes.player.draw(graphics_state, Mat4.translation([x,y,1]), this.materials.phong2)
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
             gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
@@ -250,7 +250,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);*/
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
             
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             
