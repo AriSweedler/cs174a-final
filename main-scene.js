@@ -50,12 +50,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
                 }),
-                'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
+                'flashlight': context.get_instance(Texture_Shader).material(Color.of(0, 0, 0, 1), {
                     // ambient to 1, diffuse to 0, and specular to 0
                     ambient: 1,
                     diffusivity: 0,
                     specularity: 0,
-                    texture: context.get_instance("assets/sunray.png", true)
+                    texture: context.get_instance("assets/stripes.png", true)
                 }),
                 'heart': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
@@ -326,13 +326,13 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             /* Compute where the collider spheres would be */
             for (let i = 0; i < 20; i++)  {
-                this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
+                // this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
                 this.flashlight.collider_transform = this.flashlight.collider_transform
                     .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
                     .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
                 let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
                 
-                console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
+                // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
             }
 
             /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
@@ -461,4 +461,25 @@ window.Flashlight_Shader = window.classes.Flashlight_Shader =
         }`;
         }
     }
+
+class Texture_Shader extends Phong_Shader
+{
+  /* ********* FRAGMENT SHADER ********* */
+  fragment_glsl_code()
+  {
+    /* Do smooth "Phong" shading unless options like "Gouraud mode" are wanted
+     * instead. Otherwise, we already have final colors to smear (interpolate)
+     * across vertices.*/
+    return `
+      uniform sampler2D texture;
+      void main()
+      {
+        vec4 tex_color = texture2D( texture, f_tex_coord.xy );
+
+        if (tex_color.w < 0.1) discard;
+
+        gl_FragColor = vec4( ( tex_color.xyz + shapeColor.xyz ) * ambient, shapeColor.w * tex_color.w );
+      }`;
+  }
+}
 
