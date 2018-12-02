@@ -3,7 +3,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
         constructor(context, control_box)     // The scene begins by requesting the camera, shapes, and materials it will need.
         {
             super(context, control_box);    // First, include a secondary Scene that provides movement controls:
-            
+            const gl = context.gl
             new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
@@ -27,6 +27,7 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             this.logic = new Logic();
             this.materials =
                 {
+                    basic: context.get_instance(Basic_Shader).material(),
                     phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 1, diffuse: 1}),
                     phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
                     'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
@@ -40,7 +41,8 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
                         texture: context.get_instance("assets/floor.jpg", false)
                     }),
                     tex: context.get_instance(Tex_Shader).material(),
-                    shadow: context.get_instance(Shadow_Shader).material(0.1)
+                    shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 0.5, diffuse: 1, texture: context.get_instance("assets/stone03b.jpg", false)}),
+                    orig: context.get_instance(Shadow_Shader).material()
 
                 };
 
@@ -57,7 +59,34 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
             //this.colliders = [];
             this.nextSpawn = 5.0;
 
-            this.lights = [ new Light( Mat4.look_at(Vec.of(15, 0, 15), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(0,0,6), Color.of( 1, 1, 1, 1 ), 1000 ) ];
+            this.lights = [ new Light( Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50,0,50,1), Color.of( 1, 1, 1, 1 ), 1000 ) ];
+
+            let width = 1024
+            let height = 1024
+            this.color_buffer = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.color_buffer);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                                        gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            this.depth_buffer = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0,
+                                        gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            this.frame_buffer = gl.createFramebuffer()
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.color_buffer, 0);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
         }
 
         make_control_panel() {
@@ -79,66 +108,65 @@ window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
         }
 
         display(graphics_state, gl) {
-            graphics_state.lights = this.lights
+            graphics_state.light = this.lights[0]
+            graphics_state.depth_buffer = this.depth_buffer
 
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
 
-            const x = 2.0 * Math.cos(t)
-            const y = 2.0 * Math.sin(t)
+            const x = 50.0 * Math.cos(t/ 15)
+            const y = 100.0 * Math.sin(t/ 15)
+
+            this.lights[0].transform = Mat4.look_at(Vec.of(0, x, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0))
+            this.lights[0].position = Vec.of(0, x, 50, 1)
             let light = this.lights[0].transform
 
-            let width = 256
-      let height = 256
-      let color_buffer = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, color_buffer);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
-                                  gl.RGBA, gl.UNSIGNED_BYTE, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-      let depth_buffer = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, depth_buffer);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0,
-                                  gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-      let frame_buffer = gl.createFramebuffer()
-      gl.bindFramebuffer(gl.FRAMEBUFFER, frame_buffer);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, color_buffer, 0);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, depth_buffer, 0);
-
+            
             //this.shapes.player.draw(graphics_state, Mat4.translation([x,y,1]), this.materials.phong2)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+            gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
             let temp = graphics_state.camera_transform;
             graphics_state.camera_transform = light
-            this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-5]).times(Mat4.scale([8,8,1])), this.materials.phong2)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong2)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong2)
-            this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong2)
-            this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong2)
+            this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.wall)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+            //this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong)
+            //this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.phong)
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             graphics_state.camera_transform = temp
-gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             //gl.clearColor(0,0,0,1);
             //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-gl.bindTexture(gl.TEXTURE_2D, depth_buffer)
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
             this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
-            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([8,8,1])), this.materials.shadow)
+            this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
             this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+            //gl.activeTexture(gl.TEXTURE1)
+            //gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer)
             this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-            this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
-            this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
+            //this.shapes.box.draw(graphics_state, Mat4.translation([9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
+            //this.shapes.box.draw(graphics_state, Mat4.translation([-9,0,0]).times(Mat4.scale([1,8,8])), this.materials.shadow)
 
-            //gl.bindTexture(gl.TEXTURE_2D, null)
-//gl.bindTexture(gl.TEXTURE_2D, null)
+            gl.bindTexture(gl.TEXTURE_2D, null)
+            gl.activeTexture(gl.TEXTURE1)
+            gl.bindTexture(gl.TEXTURE_2D, null)
             this.shapes.box.draw(graphics_state, Mat4.inverse(light), this.materials.phong2)
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffer)
+            gl.deleteTexture(this.depth_buffer)
+            this.depth_buffer = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, this.depth_buffer);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0,
+                                        gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,  gl.TEXTURE_2D, this.depth_buffer, 0);
+            
             //this.shapes.player.draw(graphics_state, Mat4.translation([0,0,4]), this.materials.phong2)
             
             

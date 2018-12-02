@@ -474,7 +474,7 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
         || w.mozRequestAnimationFrame || w.oRequestAnimationFrame || w.msRequestAnimationFrame
         || function( callback, element ) { w.setTimeout(callback, 1000/60);  } )( window );
     }
-  set_size( dimensions = [ 256, 256 ] )                // This function allows you to re-size the canvas anytime.  
+  set_size( dimensions = [ 1024, 1024 ] )                // This function allows you to re-size the canvas anytime.  
     { const [ width, height ] = dimensions;             // To work, it must change the size in CSS, wait for style to re-flow, 
       this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
       this.canvas.style[ "height" ] = height + "px";     
@@ -569,7 +569,7 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
 
       const rules = [ ".canvas-widget { width: 1080px; background: DimGray }",
                       ".canvas-widget * { font-family: monospace }",
-                      ".canvas-widget canvas { width: 256px; height: 256px; margin-bottom:-3px }",
+                      ".canvas-widget canvas { width: 1024px; height: 1024px; margin-bottom:-3px }",
                       ".canvas-widget div { background: white }",
                       ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
                       ".canvas-widget table.control-box { width: 1080px; border:0; margin:0; max-height:380px; transition:.5s; overflow-y:scroll; background:DimGray }",
