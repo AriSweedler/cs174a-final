@@ -19,6 +19,14 @@ class Logic {
         this.viewDir = 0;
         this.posZ = 0;
         this.posX = 0;
+        this.health = 3;
+    }
+
+    minusHealth() {
+        this.health--;
+        if (this.health == 0) {
+            this.endGame = true;
+        }
     }
 
     changeAngle(angle) {
@@ -29,6 +37,17 @@ class Logic {
         dist *= moveRate;
         this.posZ += dist * Math.cos(this.viewDir);
         this.posX += dist * Math.sin(this.viewDir);
+    }
+
+    moveP(dist) {
+        dist *= moveRate;
+        this.posZ += dist * Math.cos(this.viewDir);
+        this.posX += dist * Math.sin(this.viewDir);
+    }
+
+    jump(dist) {
+        dist *= moveRate;
+        this.posY += dist;
     }
 
     checkBoundries(grid) {
