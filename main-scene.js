@@ -32,7 +32,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 square: new Square(),
                 player: new Subdivision_Sphere(4)
             };  
-            this.colliders =  [new Monster([0,0,0])];
+            this.colliders =  [new Monster([0,0,0]), new CollidingSphere([0,0,0], 0, [1,0,0], 1), new CollidingCube([0,0,0], [1,1,1], 0, [1,0,0])];
          
            
             this.submit_shapes(context, shapes);
@@ -40,6 +40,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.materials = {
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2:context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1),{ambient: 1, diffuse: 1}),
+                phong3:context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1),{ambient: 1, diffuse: 1}),
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.5,
@@ -81,6 +82,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 playerToHand: [0.1, 0.1, -0.9],
                 longThin: [1, 1, 5]
             };
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
         }
 
         make_control_panel() {
@@ -105,9 +109,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 } ) 
             );
 
+            this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
+            this.key_triggered_button("down", ["2"], () => this.movedown = true, undefined, () => this.movedown = false);
+            this.key_triggered_button("left", ["4"], () => this.moveleft = true, undefined, () => this.moveleft = false);
+            this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
+            this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
+            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);
+
             this.new_line();
             /*y = 0.8 is as far left, y=-0.8 is as far right*/
-            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*/
+            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*//*
             this.key_triggered_button("lightLeft", ["a"], () => {
                 if (this.flashlight.angle.y >= 0.8) {
                     return
@@ -131,14 +142,15 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     return;
                 }
                 this.flashlight.angle.x -= 0.01;
-            });
+            });*/
         }
 
         display(graphics_state) {
+
             // (Draw scene 1)
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
-            this.time = t;
+/*            this.time = t;
             let box1_transform = Mat4.identity();
             let box2_transform = Mat4.identity();
 
@@ -146,106 +158,25 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             floor_transform = floor_transform.times(Mat4.translation([0, -1, 1]))
                 .times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0)));
 
-            //box1_transform = box1_transform.times(Mat4.translation([-2,0,0]));
-            box2_transform = box2_transform.times(Mat4.translation([2, 0, 0]));
-            if (this.rotateFlag) {
-                this.r1 = this.r1 + 0.5 * (t - this.rTime);
-                this.r2 = this.r2 + ((t - this.rTime) / 3);
+*/
+            if (this.moveright) { this.x += 0.2 }
+            if (this.moveup) { this.y += 0.2 }
+            if (this.moveleft) { this.x -= 0.2 }
+            if (this.movedown) { this.y -= 0.2 }
+            if (this.movein) { this.z -= 0.2 }
+            if (this.moveout) { this.z += 0.2 }
+            
 
+            //this.shapes.box.draw(graphics_state, Mat4.translation([5,0,0]), this.materials.phong.override({color: Color.of([1.0,0.0,0.0,1.0]), ambient: 1}))
+            this.colliders[1].translate(this.x, this.y, this.z)
+            if (this.colliders[1].collides(this.colliders[2])) {
+                this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong2)
             }
-            this.rTime = t;
-            box1_transform = box1_transform.times(Mat4.rotation(this.r1, Vec.of(1, 0, 0)));
-            box2_transform = box2_transform.times(Mat4.rotation(this.r2, Vec.of(0, 1, 0)));
-
-            //PLAYER camera
-            if (this.camera) {
-                this.playerM = Mat4.identity();
-                this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
-                this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
-                graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
-                this.time = t;
-            } else if (t > this.time + 1) {
-                graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
+            else {
+                this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong3)
             }
+            this.colliders[2].draw(graphics_state, this.shapes.box, this.materials.phong3)
 
-            /************************************* flashlight *************************************************/
-            /* Draw light coming from flashlight (player's hand) */
-            this.flashlight.transform = this.playerM.times( Mat4.translation(this.flashlight.playerToHand) );
-
-            /*place the tip of the flashlight where the players hand would be */
-            this.flashlight.transform = this.flashlight.transform.times( Mat4.translation(this.flashlight.playerToHand) );
-
-            /* Rotate the light first */
-            /* angle.x++ moves the light up */
-            /* angle.y++ moves the light left */
-            this.flashlight.transform = this.flashlight.transform
-                .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.rotation(this.flashlight.angle.x, [1, 0, 0]) )
-                .times( Mat4.rotation(this.flashlight.angle.y, [0, 1, 0]) )
-                .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
-
-            /* Make the lightcone long and thin (long enough to hit the far wall) */
-            this.flashlight.transform = this.flashlight.transform
-                .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.scale(this.flashlight.longThin) )
-                .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
-
-            this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
-            /************************************* flashlight *************************************************/
-
-            let grid_transform = Mat4.identity().times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation([-7, 0, 0]));
-            for (let i = 0; i < this.logic.grid.length; i++) {
-                let transform = grid_transform.times(Mat4.translation([0, i, 0]));
-                let row = this.logic.grid[i];
-                for (let j = 0; j < row.length; j++) {
-                    let row_translation = transform.times(Mat4.translation([j, 0, 0]));
-                    if (row[j] === 0) {
-                        this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
-                        let cealing = row_translation.times(Mat4.translation([0, 0, -4]));
-                        this.shapes.square.draw(graphics_state, cealing, this.materials.floor);
-                    } else if (row[j] === 1) {
-                        box1_transform = row_translation.times(Mat4.rotation(4.7, Vec.of(1, 0, 0))).times(Mat4.translation([0, 2, 0]));
-                        this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, -1, 0])), this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 1, 0])), this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 2, 0])), this.materials.wall);
-                    } else if (row[j] === 2) {
-                        box1_transform = row_translation.times(Mat4.rotation(4.7, Vec.of(1, 0, 0)))
-                            .times(Mat4.rotation(4.7, Vec.of(0, 1, 0))).times(Mat4.translation([0, 2, 0]));
-                        this.shapes.square.draw(graphics_state, box1_transform, this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, -1, 0])), this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 1, 0])), this.materials.wall);
-                        this.shapes.square.draw(graphics_state, box1_transform.times(Mat4.translation([0, 2, 0])), this.materials.wall);
-                    } else if (row[j] === 3) {
-                        this.shapes.square.draw(graphics_state, row_translation, this.materials.floor);
-                        let player_transform = row_translation.times(Mat4.translation([this.c, 0, -1])).times(Mat4.scale([1 / 2, 1 / 2, 1 / 2]));
-                        //this.shapes.player.draw(graphics_state, player_transform, this.materials.phong.override({color: Color.of(.5, 2, .5, 1)}));
-                        //const desired_camera = Mat4.inverse(player_transform);
-                        //graphics_state.camera_transform = desired_camera.map((x, i) => Vec.from(graphics_state.camera_transform[i]).mix(x, 4 * dt));
-                    }
-                }
-            }
-            this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
-
-            if(t > this.nextSpawn && t < this.nextSpawn+1){
-                if(this.colliders.length < 7){
-                     this.colliders.push(new Monster([-5,1,0]));
-                }
-                this.nextSpawn += 5.0;
-            }
-
-            for(var i =0; i<this.colliders.length; i++){
-                this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
-                this.colliders[i].move(t,this.playerPos);
-            }
-            // (Save scene 1 into an image)
-            this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
-            this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
-
-            // Clear the canvas and start over, beginning scene 2:
-            // this.webgl_manager.gl.clear( this.webgl_manager.gl.COLOR_BUFFER_BIT | this.webgl_manager.gl.DEPTH_BUFFER_BIT);
-
-            // (Draw scene 2)
         }
     };
 
