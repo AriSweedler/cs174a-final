@@ -1,4 +1,4 @@
-const moveRate = 0.35;
+const moveRate = 0.30;
 const angleRate = 0.04;
 
 class Logic {

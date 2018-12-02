@@ -6,7 +6,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             const gl = context.gl
 
-            new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
+            //new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
                 context.register_scene_component(new Movement_Controls(context, control_box.parentElement.insertCell()));
 
@@ -60,7 +60,17 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 }),
 		tex: context.get_instance(Tex_Shader).material(),
 		shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 0.5, diffuse: 1, texture: context.get_instance("assets/stone03b.jpg", false)}),
-                orig: context.get_instance(Shadow_Shader).material()
+                orig: context.get_instance(Shadow_Shader).material(),
+                floor_shadow: context.get_instance(Tiling_Shadow_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.3,
+                    texture: context.get_instance("assets/floor.jpg", false)
+                }),
+                wall_shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.4,
+                    texture: context.get_instance("assets/stone03b.jpg", false)
+                })
 
             };
 
@@ -100,21 +110,30 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.flashlight.colliders.push(newSphere);
             }
 
-	    this.lights = [ new Light( gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50,0,50,1), Color.of( 1, 1, 1, 1 ), 1000 ),
-                            new Light( gl, Mat4.look_at(Vec.of(50, 0, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0)), Vec.of(50,0,50,1), Color.of( 1, 1, 1, 1 ), 1000 ) ];
+	    this.lights = [ new Light( gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50,10,50,1), Color.of( 1, 1, 1, 1 ), 100000 ),
+                         ];
 
             this.walls = []
-            for (let i = 0; i < 150; i++) {
-                this.walls.push(Mat4.rotation(Math.random() * 6, Vec.of(0,1,0)).times(Mat4.translation([Math.random() * 800 - 400, 0, Math.random() * 800 - 400])))
+            for (let i = 0; i < 10; i++) {
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * 40 + 5], [1,4,1], Math.random() * 7, [0,1,0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * 40 + 5], [1,4,1], Math.random() * 7, [0,1,0]))
+                this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * -40 - 5], [1,4,1], Math.random() * 7, [0,1,0]))
+                this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * -40 - 5], [1,4,1], Math.random() * 7, [0,1,0]))
             }
+
+            /*for (let i = 0; i < 10; i++) {
+                this.walls.push(new CollidingCube([Math.random() * 800 - 400, 0, Math.random() * 800 - 400], [16,32,16], Math.floor(Math.random() * 4) * 0.5 * Math.PI, [0,1,0]))
+                //this.walls.push(Mat4.rotation(Math.random() * 6, Vec.of(0,1,0)).times(Mat4.translation([Math.random() * 800 - 400, 0, Math.random() * 800 - 400])))
+            }*/
+            this.player_collider = new CollidingSphere([0,0,0], 0, [1,0,0], 0.5)
 
         }
 
         make_control_panel() {
-            this.key_triggered_button("Forward", ["8"], () => this.forward = true, undefined, () => this.forward = false);
-            this.key_triggered_button("Back", ["2"], () => this.back = true, undefined, () => this.back = false);
-            this.key_triggered_button("Turn Left", ["4"], () => this.left = true, undefined, () => this.left = false);
-            this.key_triggered_button("Turn Right", ["6"], () => this.right = true, undefined, () => this.right = false);
+            this.key_triggered_button("Forward", ["w"], () => this.forward = true, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => this.back = true, undefined, () => this.back = false);
+            this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
+            this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
 
             this.key_triggered_button("MoveForward", ["g"], () => {
                 this.logic.move(-1);
@@ -137,12 +156,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 } )
             );
 
-            this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
+            /*this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
             this.key_triggered_button("down", ["2"], () => this.movedown = true, undefined, () => this.movedown = false);
             this.key_triggered_button("left", ["4"], () => this.moveleft = true, undefined, () => this.moveleft = false);
             this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
             this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
-            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);
+            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);*/
 
             this.new_line();
             /*y = 0.8 is as far left, y=-0.8 is as far right*/
@@ -174,10 +193,37 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         }
 
         display(graphics_state, gl) {
-            if (this.forward) { this.logic.move(-2) }
-            if (this.back) { this.logic.move(2) }
-            if (this.left) { this.logic.changeAngle(2) }
-            if (this.right) { this.logic.changeAngle(-2) }
+            graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
+            const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
+            this.time = t;
+
+            if (this.forward) { this.logic.move(-1) }
+            if (this.back) { this.logic.move(1) }
+            if (this.left) { this.logic.changeAngle(1) }
+            if (this.right) { this.logic.changeAngle(-1) }
+
+            const x = Math.cos(t / 2)
+            const y = Math.sin(t / 2)
+
+            this.lights[0].transform = Mat4.look_at(Vec.of(120 * x, 40, 120 * y), Vec.of(40 * x, 0, 30 * y), Vec.of(0, 1, 0))
+            this.lights[0].position = Vec.of(50 * x, 0, 50 * y)
+
+            //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong2)
+            this.player_collider.translate(this.logic.posX, 0, this.logic.posZ)
+            for (let wall of this.walls) {
+
+                   if (this.player_collider.collides(wall)) {
+                       console.log("hit")
+                       if (this.forward) { this.logic.move(1) }
+                       if (this.back) { this.logic.move(-1) }
+                        //if (this.left) { this.logic.changeAngle(-2) }
+                        //if (this.right) { this.logic.changeAngle(2) }
+                        //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
+                        break;
+                    } 
+               
+            }
+
 	/*  SHADOWS TEST STUFF
             graphics_state.light = this.lights[0]
             graphics_state.depth_buffer = this.depth_buffer
@@ -276,21 +322,45 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             
             */
 
-            graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
-            const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
-            this.time = t;
-
-            this.shapes.box.draw(graphics_state, Mat4.scale([500,1,500]).times(Mat4.translation([0, -10, 0])), this.materials.floor)            
-            this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
-            this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
-            this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
-            this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([-150, 0, 0])), this.materials.wall)
-
-            for (let wall of this.walls) {
-                this.shapes.box.draw(graphics_state, wall.times(Mat4.scale([16,30,3])), this.materials.wall)
-           
-            }
             
+
+            this.shapes.box.draw(graphics_state, Mat4.scale([50,1,50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)            
+            //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([-150, 0, 0])), this.materials.wall)
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].drawDepthBuffer(graphics_state, () => {
+                    for (let wall of this.walls) {
+                        wall.draw(graphics_state, this.shapes.box, this.materials.wall)
+                    }
+                })
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].drawOutputBuffer(graphics_state, () => {
+                    for (let wall of this.walls) {
+                        wall.draw(graphics_state, this.shapes.box, this.materials.wall_shadow)
+                    }
+                    this.shapes.box.draw(graphics_state, Mat4.scale([50,1,50]).times(Mat4.translation([0, -3, 0])), this.materials.floor_shadow)
+                })
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.lights[i].clearDepthBuffer();
+            }
+
+            for (let i = 0; i < 1; i++) {
+                this.shapes.box.draw(graphics_state, this.lights[i].transform, this.materials.phong2)
+            }
+
+            /*
+            for (let wallset of this.walls) {
+                for (let wall of wallset) {wall.draw(graphics_state, this.shapes.box, this.materials.wall)
+                }
+            }
+            */
             /*let box1_transform = Mat4.identity();
             let box2_transform = Mat4.identity();
 
@@ -389,10 +459,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.playerPos = Vec.of(this.logic.posX, 0, this.logic.posZ);
 
             //this.shapes.box.draw(graphics_state, Mat4.translation([5,0,0]), this.materials.phong.override({color: Color.of([1.0,0.0,0.0,1.0]), ambient: 1}))
-            this.colliders[1].translate(this.x, this.y, this.z)
+            /*this.colliders[1].translate(this.x, this.y, this.z)
             if (this.colliders[1].collides(this.colliders[2])) {
                 this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong2)
-            }
+            }*/
 
             for(var i =0; i<this.colliders.length; i++){
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
@@ -400,8 +470,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.colliders[i].damage();
             }
             // (Save scene 1 into an image)
-            this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
-            this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
+            //this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
+            //this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
 
             // Clear the canvas and start over, beginning scene 2:
             // this.webgl_manager.gl.clear( this.webgl_manager.gl.COLOR_BUFFER_BIT | this.webgl_manager.gl.DEPTH_BUFFER_BIT);

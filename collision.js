@@ -54,13 +54,17 @@ class CollidingCube {
     const x = scale[0]
     const y = scale[1]
     const z = scale[2]
-    let corners = [Vec.of(x, y, z),Vec.of(-x,y,z),Vec.of(-x,-y,z),Vec.of(x,-y,z),Vec.of(x,y,-z),Vec.of(-x,y,-z),Vec.of(-x,-y,-z),Vec.of(x,-y,-z)]
+    let corners = [Vec.of(x, y, z, 1),Vec.of(-x,y,z,1),Vec.of(-x,-y,z,1),Vec.of(x,-y,z,1),Vec.of(x,y,-z,1),Vec.of(-x,y,-z,1),Vec.of(-x,-y,-z,1),Vec.of(x,-y,-z,1)]
     for (let i = 0; i < 8; i++) {
       corners[i] = Mat4.translation(position).times(Mat4.rotation(rotAngle, rotAxis)).times(corners[i])
+      console.log(Mat4.rotation(rotAngle, rotAxis).times(Mat4.translation(position).times(corners[i])))
+      console.log(Mat4.translation(position).times(corners[i]))
     }
-
+  
     let centers = [corners[0].plus(corners[7]).times(0.5), corners[1].plus(corners[6]).times(0.5), corners[0].plus(corners[5]).times(0.5), corners[3].plus(corners[6]).times(0.5), corners[0].plus(corners[2]).times(0.5), corners[4].plus(corners[6]).times(0.5)]
     //console.log(centers[0])
+    console.log(centers)
+    console.log(corners)
     this.planes[0] = new CollidingPlane(centers[0], [corners[0], corners[3], corners[4], corners[7]])
     this.planes[1] = new CollidingPlane(centers[1], [corners[1], corners[2], corners[5], corners[6]])
     this.planes[2] = new CollidingPlane(centers[2], [corners[0], corners[3], corners[4], corners[5]])
@@ -113,7 +117,7 @@ class CollidingPlane {
     const outside = toCorners[0].dot(toCorners[1]) > 0 && toCorners[0].dot(toCorners[2]) > 0 && toCorners[0].dot(toCorners[3]) > 0
     //console.log(outside)
     //console.log(pointOnPlane.minus(spherePos))
-    console.log(pointOnPlane.minus(spherePos).norm())
+    //console.log(pointOnPlane.minus(spherePos).norm())
     return !outside && pointOnPlane.minus(spherePos).norm() <= otherSphere.radius
   }
 }
