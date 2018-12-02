@@ -4,7 +4,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         {
             super(context, control_box);    // First, include a secondary Scene that provides movement controls:
 
-            const gl = context.gl
+            const gl = context.gl;
 
             //new CollidingSphere(true, Mat4.translation([1,2,3]), true, true)
             if (!context.globals.has_controls)
@@ -18,9 +18,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.webgl_manager = context;      // Save off the Webgl_Manager object that created the scene.
             this.scratchpad = document.createElement('canvas');
             this.scratchpad_context = this.scratchpad.getContext('2d');     // A hidden canvas for re-sizing the real canvas to be square.
-            this.scratchpad.width   = 256;
-            this.scratchpad.height  = 256;
-            this.texture = new Texture ( context.gl, "", false, false );        // Initial image source: Blank gif file
+            this.scratchpad.width = 256;
+            this.scratchpad.height = 256;
+            this.texture = new Texture(context.gl, "", false, false);        // Initial image source: Blank gif file
             this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
             const shapes = {
@@ -32,7 +32,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
             };
-            this.colliders =  [new Monster([0,0,0])];
+            this.colliders = [new Monster([0, 0, 0])];
 
 
             this.submit_shapes(context, shapes);
@@ -52,11 +52,23 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     texture: context.get_instance("assets/floor.jpg", false)
                 }),
                 'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
+
                     // ambient to 1, diffuse to 0, and specular to 0
                     ambient: 1,
                     diffusivity: 0,
                     specularity: 0,
-                    texture: context.get_instance("assets/sunray.png", true)
+                    texture: context.get_instance("assets/stripes.png", true)
+                }),
+                'heart': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.7,
+                    texture: context.get_instance("assets/heartheart.jpg", false)
+                }),
+                tex: context.get_instance(Tex_Shader).material(),
+                shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(1, 1, 0, 1), {
+                    ambient: 0.5,
+                    diffuse: 1,
+                    texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
 		tex: context.get_instance(Tex_Shader).material(),
 		shadow: context.get_instance(Shadow_Phong_Shader).material(Color.of(1, 1, 0, 1), {ambient: 0.5, diffuse: 1, texture: context.get_instance("assets/stone03b.jpg", false)}),
@@ -84,7 +96,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.logic.changeAngle(35);
             this.camera = true;
             this.time = 0;
-            //this.colliders = [];
             this.nextSpawn = 5.0;
 
             /* initialize flashlight (make it a class probably) */
@@ -96,19 +107,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 centerToTip: [0, 0, 1],
                 playerToHand: [0.1, 0.1, -0.9],
                 longThin: [1, 1, 5],
+                collider_transform: null,
                 colliders: []
             };
-            /* initialize flashlight colliders */
-            let rotAngle = 0;
-            let rotAxis = [1, 0, 0];
-            let distance = 0;
-            let radius = 0.1;
-            for (let i = 0; i < 20; i++) {
-                distance -= 1.5*radius;
-                radius *= 1.1;
-                const newSphere = new CollidingSphere ([distance, 1, 2], 0, [1, 0, 0], radius);
-                this.flashlight.colliders.push(newSphere);
-            }
 
 	    this.lights = [ new Light( gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50,10,50,1), Color.of( 1, 1, 1, 1 ), 100000 ),
                          ];
@@ -141,19 +142,19 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("MoveBack", ["b"], () => {
                 this.logic.move(1);
             });
-            this.key_triggered_button("turnLeft", ["c"], () => {
+            this.key_triggered_button("turnLeft", ["q"], () => {
                 this.logic.changeAngle(1);
             });
-            this.key_triggered_button("turnRight", ["v"], () => {
+            this.key_triggered_button("turnRight", ["e"], () => {
                 this.logic.changeAngle(-1);
             });
             this.key_triggered_button("switchCamera", ["x"], () => {
                 this.camera = !this.camera;
             });
             this.result_img = this.control_panel.appendChild(
-                Object.assign( document.createElement( "img" ), {
-                    style:"width:200px; height:" + 200 * this.aspect_ratio + "px"
-                } )
+                Object.assign(document.createElement("img"), {
+                    style: "width:200px; height:" + 200 * this.aspect_ratio + "px"
+                })
             );
 
             /*this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
@@ -224,51 +225,51 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                
             }
 
-	/*  SHADOWS TEST STUFF
-            graphics_state.light = this.lights[0]
-            graphics_state.depth_buffer = this.depth_buffer
+            /*  SHADOWS TEST STUFF
+                    graphics_state.light = this.lights[0]
+                    graphics_state.depth_buffer = this.depth_buffer
 
-            const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
+                    const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
 
-            const x = 50.0 * Math.cos(t/ 5)
-            const y = 100.0 * Math.sin(t/ 5)
+                    const x = 50.0 * Math.cos(t/ 5)
+                    const y = 100.0 * Math.sin(t/ 5)
 
-            this.lights[0].transform = Mat4.look_at(Vec.of(0, x, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0))
-            this.lights[0].position = Vec.of(0, x, 50, 1)
-            this.lights[1].transform = Mat4.look_at(Vec.of(100, -x, 50), Vec.of(100, 0, 0), Vec.of(0, 1, 0))
-            this.lights[1].position = Vec.of(50, -x, 50, 1)
+                    this.lights[0].transform = Mat4.look_at(Vec.of(0, x, 50), Vec.of(0, 0, 0), Vec.of(0, 1, 0))
+                    this.lights[0].position = Vec.of(0, x, 50, 1)
+                    this.lights[1].transform = Mat4.look_at(Vec.of(100, -x, 50), Vec.of(100, 0, 0), Vec.of(0, 1, 0))
+                    this.lights[1].position = Vec.of(50, -x, 50, 1)
 
-            this.lights[0].drawDepthBuffer(graphics_state, () => {
-                  this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-            })
+                    this.lights[0].drawDepthBuffer(graphics_state, () => {
+                          this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.phong)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+                    })
 
-            this.lights[1].drawDepthBuffer(graphics_state, () => {
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.phong)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
-            })
+                    this.lights[1].drawDepthBuffer(graphics_state, () => {
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.phong)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.wall)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.phong)
+                    })
 
-            this.lights[0].drawOutputBuffer(graphics_state, () => {
-                  this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-            })
+                    this.lights[0].drawOutputBuffer(graphics_state, () => {
+                          this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([2,2,1])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([0,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+                    })
 
-            this.lights[1].drawOutputBuffer(graphics_state, () => {
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-                  this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
-            })
+                    this.lights[1].drawOutputBuffer(graphics_state, () => {
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,0]).times(Mat4.scale([2,2,1])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,0,-9]).times(Mat4.scale([28,28,1])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+                          this.shapes.box.draw(graphics_state, Mat4.translation([100,-9,0]).times(Mat4.scale([8,1,8])), this.materials.shadow)
+                    })
 
-            for (let i = 0; i < this.lights.length; i++) {
-                  this.lights[i].clearDepthBuffer()
-            }
+                    for (let i = 0; i < this.lights.length; i++) {
+                          this.lights[i].clearDepthBuffer()
+                    }
 
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[0].transform), this.materials.phong2)
             this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[1].transform), this.materials.phong2)
@@ -385,6 +386,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
                 this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
                 graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
+                // let health = this.playerM.times(Mat4.translation([1, 1, -2])).times(Mat4.scale([1 / 12, 1 / 12, 1 / 12]))
+                //     .times(Mat4.translation([5, 9, 0]));
+                // for (let i = 0; i < this.logic.health; i++) {
+                //     this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
+                // }
+                let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
+                    .times(Mat4.translation([-0.5, -0.5, 0]));
+                for (let i = 0; i < this.logic.health; i++) {
+                    this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
+                }
                 this.time = t;
             } else if (t > this.time + 1) {
                 graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
@@ -392,33 +403,47 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             
             /************************************* flashlight *************************************************/
             /* Draw light coming from flashlight (player's hand) */
-            this.flashlight.transform = this.playerM.times( Mat4.translation(this.flashlight.playerToHand) );
+            this.flashlight.transform = this.playerM.times(Mat4.translation(this.flashlight.playerToHand));
 
             /*place the tip of the flashlight where the players hand would be */
-            this.flashlight.transform = this.flashlight.transform.times( Mat4.translation(this.flashlight.playerToHand) );
+            this.flashlight.transform = this.flashlight.transform.times(Mat4.translation(this.flashlight.playerToHand));
 
             /* Rotate the light first */
             /* angle.x++ moves the light up */
             /* angle.y++ moves the light left */
             this.flashlight.transform = this.flashlight.transform
+                .times(Mat4.translation(this.flashlight.centerToTip))
+                .times(Mat4.rotation(this.flashlight.angle.x, [1, 0, 0]))
+                .times(Mat4.rotation(this.flashlight.angle.y, [0, 1, 0]))
+                .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
+
+            /* Save the flashlight origin position before making the flashlight long and thin */
+            this.flashlight.collider_transform = this.flashlight.transform
                 .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.rotation(this.flashlight.angle.x, [1, 0, 0]) )
-                .times( Mat4.rotation(this.flashlight.angle.y, [0, 1, 0]) )
-                .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
+                .times( Mat4.scale(Array(3).fill(0.01)) );
 
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
-                .times( Mat4.translation(this.flashlight.centerToTip) )
-                .times( Mat4.scale(this.flashlight.longThin) )
-                .times( Mat4.translation(this.flashlight.centerToTip.map(i=>-i)) );
+                .times(Mat4.translation(this.flashlight.centerToTip))
+                .times(Mat4.scale(this.flashlight.longThin))
+                .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
 
-            this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
+            for (let i = 0; i < 5; i++) {
+                this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
+                this.flashlight.transform = this.flashlight.transform.times( Mat4.scale(Array(3).fill(0.9)) );
+            }
 
-            /* Get the origin of the flashlight tip.
-             * Get the direction of the flashlight
-             * Get the distance of the object from the flashlight origin, and then the distance of the object from the nearest point on the direction vector
-             * If SQRT of distance between obj & nearest point on vector is less than the radius of the cone there, then it's a collision */
-            let flashlightOrigin = this.flashlight.transform.times( Vec.of(0,0,0,1) );
+            /* Compute where the collider spheres would be */
+            for (let i = 0; i < 20; i++)  {
+                this.flashlight.collider_transform = this.flashlight.collider_transform
+                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
+                    .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
+                this.shapes.player.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
+
+                let colliderOrigin = this.flashlight.collider_transform.times( Vec.of(0,0,0,1) );
+
+                // console.log("Flashlight collider located at " + colliderOrigin + " (rad = " + 1 + ")");
+            }
 
             /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
 
@@ -464,9 +489,16 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.colliders[1].draw(graphics_state, this.shapes.player, this.materials.phong2)
             }*/
 
-            for(var i =0; i<this.colliders.length; i++){
+            if (t > this.nextSpawn && t < this.nextSpawn + 1) {
+                if (this.colliders.length < 7) {
+                    this.colliders.push(new Monster([-5, 1, 0]));
+                }
+                this.nextSpawn += 5.0;
+            }
+
+            for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
-                this.colliders[i].move(t,this.playerPos);
+                this.colliders[i].move(t, this.playerPos);
                 this.colliders[i].damage();
             }
             // (Save scene 1 into an image)
@@ -482,55 +514,44 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
     };
 
 window.Flashlight_Shader = window.classes.Flashlight_Shader =
-class Flashlight_Shader extends Shader              // Subclasses of Shader each store and manage a complete GPU program.
-{ material() { return { shader: this } }      // Materials here are minimal, without any settings.
-    map_attribute_name_to_buffer_name( name )       // The shader will pull single entries out of the vertex arrays, by their data fields'
-    {                                             // names.  Map those names onto the arrays we'll pull them from.  This determines
-                                                    // which kinds of Shapes this Shader is compatible with.  Thanks to this function,
-                                                    // Vertex buffers in the GPU can get their pointers matched up with pointers to
-                                                    // attribute names in the GPU.  Shapes and Shaders can still be compatible even
-                                                    // if some vertex data feilds are unused.
-        return { object_space_pos: "positions" }[ name ];      // Use a simple lookup table.
-    }
-    // Define how to synchronize our JavaScript's variables to the GPU's:
-    update_GPU( g_state, model_transform, material, gpu = this.g_addrs, gl = this.gl )
-        { const proj_camera = g_state.projection_transform.times( g_state.camera_transform );
-                                                                                        // Send our matrices to the shader programs:
-        gl.uniformMatrix4fv( gpu.model_transform_loc,             false, Mat.flatten_2D_to_1D( model_transform.transposed() ) );
-        gl.uniformMatrix4fv( gpu.projection_camera_transform_loc, false, Mat.flatten_2D_to_1D(     proj_camera.transposed() ) );
-        }
-    shared_glsl_code()            // ********* SHARED CODE, INCLUDED IN BOTH SHADERS *********
-    { return `precision mediump float;
-                varying vec4 position;
-                varying vec4 center;
-                varying vec2 f_tex_coord;
-                uniform float ambient, diffusivity, specularity, smoothness, animation_time;
-                uniform vec4 shapeColor;
-        `;
-    }
-    vertex_glsl_code()           // ********* VERTEX SHADER *********
-    { return `
-        attribute vec3 object_space_pos;
-        uniform mat4 model_transform;
-        uniform mat4 projection_camera_transform;
+class Flashlight_Shader extends Phong_Shader
+{
+    shared_glsl_code(){return `
+        precision mediump float;
+        varying vec2 f_tex_coord;
+    `;}
 
-        void main()
-        { center = model_transform * vec4( 0,0,0,1 );
-            position = model_transform * vec4(object_space_pos, 1.0);
-            gl_Position = projection_camera_transform * position;            // The vertex's final resting place (in NDCS).
-        }`;
-    }
-    fragment_glsl_code()           // ********* FRAGMENT SHADER *********
-    { return `
-        uniform sampler2D texture;
-        void main()
-        {
-            vec4 tex_color = texture2D( texture, f_tex_coord.xy );
-            vec4 color = tex_color.xyzw;
+    vertex_glsl_code(){return `
+    attribute vec3 object_space_pos;
+    attribute vec2 tex_coord;
 
-            float dist = sin( distance( position, center ) );
-            gl_FragColor = dist * color;
-        }`;
+    uniform mat4 camera_model_transform, projection_camera_model_transform;
+
+    void main()
+    {
+        gl_Position = projection_camera_model_transform * vec4(object_space_pos, 1.0);
+        f_tex_coord = tex_coord;
+
+        vec3 screen_space_pos = ( camera_model_transform * vec4(object_space_pos, 1.0) ).xyz;
     }
+    `;}
+
+    fragment_glsl_code(){return `
+    uniform sampler2D texture;
+    uniform vec4 shapeColor;
+    void main()
+    {
+        vec4 tex_color = texture2D( texture, f_tex_coord.xy );
+        vec4 color = tex_color.xyzw;
+
+        float alpha = tex_color.w * shapeColor.w;
+        if (alpha < 0.7) discard;
+
+        vec4 color = vec4( tex_color.xyz, alpha );
+
+
+        gl_FragColor = color;
+    }
+    `;}
 }
 
