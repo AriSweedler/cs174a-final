@@ -237,7 +237,7 @@ class Vertex_Buffer           // To use Vertex_Buffer, make a subclass of it tha
     {                                        // Send the completed vertex and index lists to their own buffers in the graphics card.
       for( let n of selection_of_arrays )    // Optional arguments allow calling this again to overwrite some or all GPU buffers as needed.
         { let buffer = this.array_names_mapping_to_WebGLBuffers[n] = gl.createBuffer();
-          console.log(n)
+          //console.log(n)
           gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
           gl.bufferData( gl.ARRAY_BUFFER, Mat.flatten_2D_to_1D( this[n] ), gl.STATIC_DRAW );
         }
@@ -468,7 +468,7 @@ class Graphics_Addresses    // For organizing communication with the GPU for Sha
                                                     enabled: true, type: gl.FLOAT,
                                                     normalized: false, stride: 0, pointer: 0 };
     } 
-    console.log(this.shader_attributes)
+    //console.log(this.shader_attributes)
   }
 }
 
