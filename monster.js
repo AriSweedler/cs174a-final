@@ -3,7 +3,7 @@ class Monster extends CollidingSphere {
   constructor(position) {
      super(position, 0, Vec.of(0,1,0), 0.75);
      this.health = 100.0;
-     this.color = Color.of(1,1,1,1);
+     this.color = Color.of(1,0.9,0.9,1);
      this.hit = false;
      this.direction = Vec.of(-25+50*Math.random(),4*Math.random(),10*Math.random()).minus(Vec.of(...position));
      this.speed = 0.002;
@@ -12,9 +12,9 @@ class Monster extends CollidingSphere {
 
   damage(){
     this.health = this.health - 0.5;
-    this.speed = 0.005+(100-this.health)*0.0015;
+    this.speed = 0.001+(100-this.health)*0.0015;
     this.color = Color.of(1,1-((250-2.5*this.health)/100),1-((250-2.5*this.health)/100),(this.health/100.0));
-    this.radius = this.radius*((this.health+10.0)/110.0);
+    this.radius = this.radius*((this.health+20.0)/110.0);
     if(this.radius < 0.3){
       this.radius = 0.3;
     }

@@ -33,6 +33,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.materials = {
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 1}),
+                moon: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 0}),
                 phong3: context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1), {ambient: 1, diffuse: 1}),
                 ghost: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {
                     ambient: 0.7,
@@ -118,7 +119,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.started = false;
 
             this.kills = 0;
-            this.period = 10.0;
 
             this.maxX = 50;
             this.minX = -50;
@@ -160,8 +160,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 step: new Audio("assets/step.wav")
 
             }
-            this.deathTime = 0;
-            this.dead = false;
         }
 
         play_sound(name, volume = 1) {
@@ -227,12 +225,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.time = t;
 
             if (this.logic.health <= 0) {
-                if (!this.dead) {
-                    this.deathTime = t + 6;
-                    this.dead = true;
+                if (!this.logic.dead) {
+                    this.logic.deathTime = t + 6;
+                    this.logic.dead = true;
                     // TODO: SOUND HEAR PLEASE!)
                 }
-                let reviveTime = this.deathTime - t;
+                let reviveTime = this.logic.deathTime - t;
                 this.lights[0].position = Mat4.identity();
                 graphics_state.camera_transform = Mat4.identity();
 
@@ -271,12 +269,14 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 }
 
                 if (reviveTime <= 0) {
-                    this.logic.health = 100;
-                    this.logic.score = 0;
-                    this.logic.posX = 0;
-                    this.logic.posZ = 0;
-                    this.logic.viewDir = 0;
-                    this.dead = false;
+                    this.logic.reset();
+
+                    /* clear ghosts upon rebirth so you're not spawnkilled */
+                    this.colliders = [];
+
+                    this.colliders.push(new Monster([this.minX + (this.maxX - this.minX) * Math.random(), this.minY + (this.maxY - this.minY) * Math.random(), this.minZ + (this.maxZ - this.minZ)]));
+                    this.colliders.push(new Monster([this.minX + (this.maxX - this.minX) * Math.random(), this.minY + (this.maxY - this.minY) * Math.random(), this.minZ + (this.maxZ - this.minZ)]));
+                    this.colliders.push(new Monster([this.minX + (this.maxX - this.minX) * Math.random(), this.minY + (this.maxY - this.minY) * Math.random(), this.minZ + (this.maxZ - this.minZ)]));
                 }
                 return;
             }
@@ -333,10 +333,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             for (let col of this.colliders) {
                 if (col.collidesSphere(this.player_collider)) {
-                    if (this.logic.playerHit + 2 < this.time) {
+                    if (this.logic.playerHit + this.logic.timeBetweenHits < this.time) {
                         console.log("player hit");
                         this.logic.playerHit = this.time;
-                        this.logic.health -= 7;
+                        this.logic.health -= this.logic.ghostDamage;
                     }
                 }
             }
@@ -369,7 +369,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
 
             for (let i = 0; i < 1; i++) {
-                this.shapes.moon.draw(graphics_state, Mat4.inverse(this.lights[i].transform).times(Mat4.scale([8, 8, 8])), this.materials.phong2)
+                this.shapes.moon.draw(graphics_state, Mat4.inverse(this.lights[i].transform).times(Mat4.scale([8, 8, 8])), this.materials.moon)
             }
             /*
             for (let wallset of this.walls) {
@@ -526,10 +526,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             if (t > this.nextSpawn && t < this.nextSpawn + 1) {
                 if (this.colliders.length == 0 && this.started) {
                     this.colliders.push(new Monster([this.player_collider.position[0] - 15, 0, this.player_collider.position[2] - 5 + 10 * Math.random()]));
-                } else if (this.colliders.length < 10 && this.started) {
+                } else if (this.colliders.length < this.logic.max_ghosts && this.started) {
                     this.colliders.push(new Monster([this.minX + (this.maxX - this.minX) * Math.random(), this.minY + (this.maxY - this.minY) * Math.random(), this.minZ + (this.maxZ - this.minZ)]));
                 }
-                this.nextSpawn += this.period;
+                this.nextSpawn += this.logic.spawn_period;
             }
 
             for (var i = 0; i < this.colliders.length; i++) {
@@ -544,11 +544,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 if (!this.colliders[i].alive) {
                     console.log("Ghost died");
                     this.colliders.splice(i, 1);
-                    this.logic.score += 10;
+                    this.logic.getKill();
                     this.kills++;
                     if (this.kills % 3 == 0) {
-                        this.period -= 2.0;
-                        this.logic.ghostDamage *= 2;
+                        this.logic.levelUp();
                     }
                 }
             }

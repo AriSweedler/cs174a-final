@@ -16,13 +16,35 @@ class Logic {
             [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
+        this.reset();
+    }
+
+    reset() {
+        this.dead = false;
+        this.deathTime = 0;
         this.viewDir = 0;
         this.posZ = 0;
         this.posX = 0;
         this.health = 100;
         this.score = 0;
+        this.spawn_period = 5.0;
         this.playerHit = 0;
-        this.ghostDamage = 10;
+        this.ghostDamage = 3;
+        this.timeBetweenHits = 1;
+        this.max_ghosts = 4;
+        this.level = 1;
+    }
+
+    levelUp() {
+        this.level++;
+        this.spawn_period *= 0.8;
+        this.ghostDamage += 4;
+        this.timeBetweenHits *= 0.7;
+        this.max_ghosts += 2;
+    }
+
+    getKill() {
+        this.score += 10 + 5*this.level;
     }
 
     minusHealth(damage) {
