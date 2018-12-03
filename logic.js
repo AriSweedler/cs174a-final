@@ -25,7 +25,7 @@ class Logic {
     }
 
     minusHealth() {
-        this.health = this.health - 20;
+        this.health = this.health - 1;
         if (this.health == 0) {
             this.endGame = true;
         }

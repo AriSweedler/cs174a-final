@@ -105,7 +105,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.logic.changeAngle(35);
             this.camera = true;
             this.time = 0;
-            this.nextSpawn = 5.0;
+            this.nextSpawn = 2.0;
+            this.started = false;
+
+            this.kills = 0;
+            this.period = 10.0;
 
              this.maxX = 50;
              this.minX = -50;
@@ -143,7 +147,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5);
 
             this.sounds ={
-                music: new Audio("assets/music.wav"),
+                music: new Audio("assets/music1.wav"),
                 step: new Audio("assets/step.wav")
 
             }
@@ -157,10 +161,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
               this.sounds[ name ].play();
             }
         play_music( name)
-            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < 3000 ) return;
-              this.sounds[ name ].currentTime = 0;
+            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < 200 ) return;
               this.sounds[ name ].volume = 0.3;
+              this.sounds[ name ].loop= true;
               this.sounds[ name ].play();
+
             }    
 
         make_control_panel() {
@@ -194,6 +199,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("Start", ["Enter"], () => {
                 document.querySelector('.modal#ready').style.display = 'none'; //disables
                 this.play_music("music");
+                this.started = true;
             });
         }
 
@@ -445,20 +451,31 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }*/
 
             if (t > this.nextSpawn && t < this.nextSpawn + 1) {
-                if (this.colliders.length < 10) {
+                if (this.colliders.length == 0 && this.started) {
+                    this.colliders.push(new Monster([this.player_collider.position[0]-15,0,this.player_collider.position[2]-5+10*Math.random()]));
+                }
+                else if (this.colliders.length < 10 && this.started) {
                     this.colliders.push(new Monster([this.minX+(this.maxX-this.minX)*Math.random(),this.minY+(this.maxY-this.minY)*Math.random(),this.minZ+(this.maxZ-this.minZ)]));
                 }
-                this.nextSpawn += 5.0;
+                this.nextSpawn += this.period;
             }
 
             for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.ghost.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
-                if (!this.colliders[i].alive) {
-                    /* remove dead ghosts, give player points */
-                    this.colliders.splice(i, 1);
-                    this.logic.score += 10;
+                if(this.colliders[i].collides(this.player_collider)){
+                    this.logic.minusHealth();
+                }
+
+                /* remove dead ghosts, give player points for kills */
+                if(!this.colliders[i].alive){
                     console.log("Ghost died");
+                    this.colliders.splice(i,1);
+                    this.logic.score += 10;
+                    this.kills++;
+                    if(this.kills%3 ==0){
+                        this.period -= 2.0;
+                    }
                 }
             }
         }

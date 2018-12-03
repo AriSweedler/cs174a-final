@@ -1,11 +1,11 @@
 window.Monster= window.classes.Monster =
 class Monster extends CollidingSphere {
   constructor(position) {
-     super(position, 0, Vec.of(0,1,0), 0.5);
+     super(position, 0, Vec.of(0,1,0), 0.75);
      this.health = 100.0;
      this.color = Color.of(1,1,1,1);
      this.hit = false;
-     this.direction = Vec.of(-4+14*Math.random(),4*Math.random(),10*Math.random()).minus(Vec.of(...position));
+     this.direction = Vec.of(-25+50*Math.random(),4*Math.random(),10*Math.random()).minus(Vec.of(...position));
      this.speed = 0.002;
      this.alive = true;
   }
@@ -31,7 +31,7 @@ class Monster extends CollidingSphere {
      const maxZ = 50;
      const minZ = -50;
      const minY = -4;
-     const maxY = 6; 
+     const maxY = 4; 
 
     if(this.hit){ //seek player if hit
         this.direction = playerPos.minus(Vec.of(...this.position));
