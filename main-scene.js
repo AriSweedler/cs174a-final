@@ -252,7 +252,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (let i = 0; i < 1; i++) {
                 this.shapes.box.draw(graphics_state, this.lights[i].transform, this.materials.phong2)
             }
-                this.shapes.box.draw(graphics_state, Mat4.identity().times(Mat4.scale([10,10,10])), this.materials.wall)
             /*
             for (let wallset of this.walls) {
                 for (let wall of wallset) {wall.draw(graphics_state, this.shapes.box, this.materials.wall)
