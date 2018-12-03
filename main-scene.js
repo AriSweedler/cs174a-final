@@ -27,7 +27,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 text: new Text_Line(35)
             };
             this.colliders = [];
-
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
             this.materials = {
@@ -169,7 +168,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             });
             this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
             this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
-
             this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
             this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
             this.new_line();
@@ -196,8 +194,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 document.querySelector('.modal#ready').style.display = 'none'; //disables
                 this.play_music("music");
             });
-           
-            this.new_line();
         }
 
         display(graphics_state, gl) {
