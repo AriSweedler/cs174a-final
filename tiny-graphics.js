@@ -417,8 +417,9 @@ class Light                                                     // The propertie
 
     drawFunction()
     
-    gl.bindTexture(gl.TEXTURE_2D, null)
     gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, null)
 
     graphics_state.light = undefined
