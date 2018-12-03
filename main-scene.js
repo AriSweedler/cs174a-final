@@ -71,7 +71,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     specularity: 0,
                     ambient: 0.4,
                     texture: context.get_instance("assets/stone03b.jpg", false)
-                })
+                }),
+                
 
             };
 
@@ -222,7 +223,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             }
 
-            this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
+            //this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, -150])), this.materials.wall)
             //this.shapes.box.draw(graphics_state, Mat4.scale([3, 100, 500]).times(Mat4.translation([150, 0, 0])), this.materials.wall)
@@ -250,7 +251,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
 
             for (let i = 0; i < 1; i++) {
-                this.shapes.box.draw(graphics_state, this.lights[i].transform, this.materials.phong2)
+                this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[i].transform), this.materials.phong2)
             }
             /*
             for (let wallset of this.walls) {
