@@ -26,6 +26,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 moon: new Subdivision_Sphere(4),
                 text: new Text_Line(35)
             };
+
             this.colliders = [];
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
