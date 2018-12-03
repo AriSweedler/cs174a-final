@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ced7473-2719-495f-bf41-f05e354d068c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main-scene.js" beforeDir="false" afterPath="$PROJECT_DIR$/main-scene.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,17 +28,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main-scene.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="145">
-              <caret line="466" column="23" lean-forward="true" selection-start-line="466" selection-start-column="23" selection-end-line="466" selection-end-column="23" />
+            <state relative-caret-position="399">
+              <caret line="312" column="56" selection-start-line="312" selection-start-column="56" selection-end-line="312" selection-end-column="56" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/shadow.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-8899" />
-          </provider>
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -52,8 +51,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/logic.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="950">
-              <caret line="50" column="5" selection-start-line="50" selection-start-column="5" selection-end-line="50" selection-end-column="5" />
+            <state relative-caret-position="620">
+              <caret line="73" selection-start-line="73" selection-end-line="73" />
             </state>
           </provider>
         </entry>
@@ -61,8 +60,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dependencies.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="13794">
-              <caret line="726" column="44" selection-start-line="726" selection-start-column="44" selection-end-line="726" selection-end-column="44" />
+            <state relative-caret-position="620">
+              <caret line="927" column="5" selection-start-line="927" selection-start-column="5" selection-end-line="927" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -109,9 +108,9 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/scripts/main.js" />
-        <option value="$PROJECT_DIR$/dependencies.js" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/collision.js" />
+        <option value="$PROJECT_DIR$/dependencies.js" />
         <option value="$PROJECT_DIR$/logic.js" />
         <option value="$PROJECT_DIR$/main-scene.js" />
       </list>
@@ -129,24 +128,29 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="shadowTag3" type="b2602c69:ProjectViewProjectNode" />
-              <item name="shadowTag3" type="462c0819:PsiDirectoryNode" />
+              <item name="shadowTagFinal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="shadowTagFinal" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="shadowTagFinal" type="b2602c69:ProjectViewProjectNode" />
+              <item name="shadowTagFinal" type="462c0819:PsiDirectoryNode" />
+              <item name="assets" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1543783509477" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1543798424536" />
     <property name="ignore_missing_gitignore" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Waffer Circle Beta" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="C:/Program Files/nodejs/node" />
@@ -154,13 +158,14 @@
     <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Nikita\Documents\projects\shadowTagFinal\assets" />
+      <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\shadowTag2\assets" />
+      <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\term-project-group-24\scripts" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\term-project-group-24\scripts" />
       <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\term-project-group-24" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\shadowTag2\assets" />
-      <recent name="C:\Users\Nikita\Documents\projects\CS-174a Graphics\term-project-group-24\scripts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -175,7 +180,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JavaScript Debug.shadowTug">
+  <component name="RunManager" selected="JavaScript Debug.RUN">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -214,10 +219,13 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="RUN" type="JavascriptDebugType" temporary="true" uri="http://localhost:63342/shadowTagFinal/term-project-group-24/index.html">
+      <method v="2" />
+    </configuration>
     <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/term-project-group-24/index.html">
       <method v="2" />
     </configuration>
-    <configuration name="shadowTug" type="JavascriptDebugType" temporary="true" uri="http://localhost:63342/shadowTag2/term-project-group-24/index.html">
+    <configuration name="shadowTugF" type="JavascriptDebugType" temporary="true" uri="http://localhost:63342/shadowTag2/term-project-group-24/index.html">
       <method v="2" />
     </configuration>
     <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
@@ -440,11 +448,13 @@
     </configuration>
     <list>
       <item itemvalue="JavaScript Debug.index.html" />
-      <item itemvalue="JavaScript Debug.shadowTug" />
+      <item itemvalue="JavaScript Debug.shadowTugF" />
+      <item itemvalue="JavaScript Debug.RUN" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="JavaScript Debug.shadowTug" />
+        <item itemvalue="JavaScript Debug.RUN" />
+        <item itemvalue="JavaScript Debug.shadowTugF" />
         <item itemvalue="JavaScript Debug.index.html" />
       </list>
     </recent_temporary>
@@ -476,11 +486,12 @@
       <workItem from="1543781219276" duration="2302000" />
       <workItem from="1543783566380" duration="312000" />
       <workItem from="1543793237706" duration="106000" />
+      <workItem from="1543797679655" duration="744000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="38560000" />
+    <option name="totallyTimeSpent" value="39304000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -495,7 +506,7 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.110738255" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11208054" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -510,7 +521,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.329718" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.14164306" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.09206799" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.34924078" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
@@ -595,20 +606,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/logic.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="950">
-          <caret line="50" column="5" selection-start-line="50" selection-start-column="5" selection-end-line="50" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dependencies.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="13794">
-          <caret line="726" column="44" selection-start-line="726" selection-start-column="44" selection-end-line="726" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tiny-graphics.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7220">
@@ -619,15 +616,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/shadow.js">
+    <entry file="file://$PROJECT_DIR$/dependencies.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-8899" />
+        <state relative-caret-position="620">
+          <caret line="927" column="5" selection-start-line="927" selection-start-column="5" selection-end-line="927" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shadow.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logic.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="620">
+          <caret line="73" selection-start-line="73" selection-end-line="73" />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main-scene.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="466" column="23" lean-forward="true" selection-start-line="466" selection-start-column="23" selection-end-line="466" selection-end-column="23" />
+        <state relative-caret-position="399">
+          <caret line="312" column="56" selection-start-line="312" selection-start-column="56" selection-end-line="312" selection-end-column="56" />
         </state>
       </provider>
     </entry>
