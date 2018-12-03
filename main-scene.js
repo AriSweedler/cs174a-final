@@ -143,7 +143,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5);
 
             this.sounds ={
-                music: new Audio("assets/music.mp3"),
+                music: new Audio("assets/music.wav"),
                 step: new Audio("assets/step.wav")
 
             }
@@ -159,7 +159,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
         play_music( name)
             { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < 3000 ) return;
               this.sounds[ name ].currentTime = 0;
-              this.sounds[ name ].volume = 0.4;
+              this.sounds[ name ].volume = 0.3;
               this.sounds[ name ].play();
             }    
 
