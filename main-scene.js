@@ -23,6 +23,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
+                text: new Text_Line(35)
             };
             this.colliders = [new Monster([0, 0, 0])];
 
@@ -72,8 +73,24 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.4,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-                
-
+                'grey': context.get_instance(Phong_Shader).material(Color.of(.1, .5, .5, 1), {
+                    ambient: 0,
+                    diffusivity: .3,
+                    specularity: .5,
+                    smoothness: 10
+                }),
+                // 'grey': context.get_instance(Phong_Shader).material(Color.of(.1, .5, .5, 1), {
+                //     ambient: 0,
+                //     diffusivity: .3,
+                //     specularity: .5,
+                //     smoothness: 10
+                // }),
+                'text_image': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    ambient: 1,
+                    diffusivity: 0,
+                    specularity: 0,
+                    texture: context.get_instance("assets/text.png", false)
+                })
             };
 
             this.rotateFlag = false;
@@ -282,11 +299,20 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
                 this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
                 graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
-                let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
-                    .times(Mat4.translation([-0.5, -0.5, 0]));
-                for (let i = 0; i < this.logic.health; i++) {
-                    this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
-                }
+                // let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
+                //     .times(Mat4.translation([-0.5, -0.5, 0]));
+                // for (let i = 0; i < this.logic.health; i++) {
+                //     this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
+                // }
+
+                let line = "    Score:" + 50 + "        Health: " + this.logic.health + " %";
+                this.shapes.text.set_string(line);
+                this.shapes.text.draw(graphics_state, this.playerM
+                        .times(Mat4.translation([-0.25, 0.85, -1]))
+                        .times(Mat4.scale([1 / 100, 1 / 80, 1 / 100]))
+                        .times(Mat4.translation([0, -2.2, 0]))
+                    , this.materials.text_image);
+
                 this.time = t;
             } else if (t > this.time + 1) {
                 graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
@@ -318,28 +344,28 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times(Mat4.translation(this.flashlight.centerToTip))
                 .times(Mat4.scale(this.flashlight.longThin))
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
-            
+
             for (let i = 0; i < 5; i++) {
-                this.flashlight.rotation += Math.random()*0.01;
+                this.flashlight.rotation += Math.random() * 0.01;
                 this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
                 this.flashlight.transform = this.flashlight.transform
                     .times(Mat4.translation(this.flashlight.centerToTip))
                     .times(Mat4.rotation(this.flashlight.rotation, [0, 0, 1]))
-                    .times( Mat4.scale([0.5, 0.5, 0.5]) )
+                    .times(Mat4.scale([0.5, 0.5, 0.5]))
                     .times(Mat4.translation(this.flashlight.centerToTip.map(x => -x)));
             }
 
             /* Compute where the collider spheres would be */
             for (let i = 0; i < 20; i++) {
                 this.flashlight.collider_transform = this.flashlight.collider_transform
-                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
-                    .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
+                    .times(Mat4.translation([0, 0, -3])) //move the next sphere forwards
+                    .times(Mat4.scale(Array(3).fill(1.3))); //make the next sphere bigger
 
                 // let matTemp = this.materials.phong2;
 
                 let sphere = {
-                    position: this.flashlight.collider_transform.times( Vec.of(0,0,0,1) ),
-                    radius: 0.001 + i*0.03
+                    position: this.flashlight.collider_transform.times(Vec.of(0, 0, 0, 1)),
+                    radius: 0.001 + i * 0.03
                 };
                 /* For each colliding sphere, check to see if it hits a ghost */
                 for (let j = 0; j < this.colliders.length; j++) {
@@ -418,7 +444,8 @@ window.Flashlight_Shader = window.classes.Flashlight_Shader =
         varying float ambient, animation_time;
         varying vec2 f_tex_coord;
         varying vec4 position, center;
-    `;}
+    `;
+        }
 
         vertex_glsl_code() {
             return `
