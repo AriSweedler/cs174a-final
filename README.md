@@ -19,9 +19,9 @@ the direction of your flashlight is controlled with IJKL.
 
 
 ### Sijay Liu
-*Implemented collider objects for sphere-sphere and sphere-cube collisions.
-*Implemented shadowmapping shader.
-*Implemented simple level generation.
+* Implemented collider objects for sphere-sphere and sphere-cube collisions.
+* Implemented shadowmapping shader.
+* Implemented simple level generation.
 
 ## How To Run It
 
