@@ -23,9 +23,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
+                moon: new Subdivision_Sphere(4),
+                text: new Text_Line(35)
             };
             this.colliders = [];
-
 
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
@@ -74,8 +75,24 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     ambient: 0.4,
                     texture: context.get_instance("assets/stone03b.jpg", false)
                 }),
-                
-
+                'grey': context.get_instance(Phong_Shader).material(Color.of(.1, .5, .5, 1), {
+                    ambient: 0,
+                    diffusivity: .3,
+                    specularity: .5,
+                    smoothness: 10
+                }),
+                // 'grey': context.get_instance(Phong_Shader).material(Color.of(.1, .5, .5, 1), {
+                //     ambient: 0,
+                //     diffusivity: .3,
+                //     specularity: .5,
+                //     smoothness: 10
+                // }),
+                'text_image': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    ambient: 1,
+                    diffusivity: 0,
+                    specularity: 0,
+                    texture: context.get_instance("assets/text.png", false)
+                })
             };
 
             this.rotateFlag = false;
@@ -105,10 +122,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 },
                 centerToTip: [0, 0, 1],
                 playerToHand: [0.1, 0.1, -0.9],
-                longThin: [1, 1, 5],
+                longThin: [1, 1, 10],
                 collider_transform: null,
                 colliders: [],
-                rotation: 0
+                rotation: 0,
+                keys: {},
+                movespeed: 0.01
             };
 
             this.lights = [new Light(gl, Mat4.look_at(Vec.of(50, 10, 50), Vec.of(10, 0, 10), Vec.of(0, 1, 0)), Vec.of(50, 10, 50, 1), Color.of(1, 1, 1, 1), 100000),
@@ -145,27 +164,44 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }    
 
         make_control_panel() {
+<<<<<<< HEAD
             this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
             this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
+=======
+            this.live_string(box => {
+                box.textContent = "Player controls:"
+            });
+            this.key_triggered_button("Forward", ["w"], () => this.forward = true, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => this.back = true, undefined, () => this.back = false);
+>>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
             this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
             this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
+            this.new_line();
 
+<<<<<<< HEAD
             this.key_triggered_button("MoveForward", ["g"], () => {
                 this.logic.move(-1);
                 this.play_sound("step");
+=======
+            //flashlight controls
+            this.live_string(box => {
+                box.textContent = "Flashlight controls:"
+>>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
             });
-            this.key_triggered_button("MoveBack", ["b"], () => {
-                this.logic.move(1);
-            });
-            this.key_triggered_button("turnLeft", ["q"], () => {
-                this.logic.changeAngle(1);
-            });
-            this.key_triggered_button("turnRight", ["e"], () => {
-                this.logic.changeAngle(-1);
+            this.new_line();
+            this.key_triggered_button("Up", ["i"], () => this.flashlight.keys.up = true, undefined, () => this.flashlight.keys.up = false);
+            this.key_triggered_button("Down", ["k"], () => this.flashlight.keys.down = true, undefined, () => this.flashlight.keys.down = false);
+            this.key_triggered_button("Left", ["j"], () => this.flashlight.keys.left = true, undefined, () => this.flashlight.keys.left = false);
+            this.key_triggered_button("Right", ["l"], () => this.flashlight.keys.right = true, undefined, () => this.flashlight.keys.right = false);
+            this.new_line();
+
+            this.live_string(box => {
+                box.textContent = "Other controls:"
             });
             this.key_triggered_button("switchCamera", ["x"], () => {
                 this.camera = !this.camera;
             });
+<<<<<<< HEAD
             this.key_triggered_button("Start", ["Enter"], () => {
                 document.querySelector('.modal#ready').style.display = 'none'; //disables
                 this.play_music("music");
@@ -182,34 +218,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
             this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
             this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);*/
+=======
+>>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
 
             this.new_line();
-            /*y = 0.8 is as far left, y=-0.8 is as far right*/
-            /*x = 0.44 is top of the screen, x = -0.03 is the bottom of the screen*//*
-            this.key_triggered_button("lightLeft", ["a"], () => {
-                if (this.flashlight.angle.y >= 0.8) {
-                    return
-                }
-                this.flashlight.angle.y += 0.01;
-            });
-            this.key_triggered_button("lightRight", ["d"], () => {
-                if (this.flashlight.angle.y <= -0.8) {
-                    return;
-                }
-                this.flashlight.angle.y -= 0.01;
-            });
-            this.key_triggered_button("lightUp", ["w"], () => {
-                if (this.flashlight.angle.x >= 0.5) {
-                    return;
-                }
-                this.flashlight.angle.x += 0.01;
-            });
-            this.key_triggered_button("lightDown", ["s"], () => {
-                if (this.flashlight.angle.x <= 0) {
-                    return;
-                }
-                this.flashlight.angle.x -= 0.01;
-            });*/
         }
 
         display(graphics_state, gl) {
@@ -228,6 +240,17 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
             if (this.right) {
                 this.logic.changeAngle(-1)
+            }
+
+            if (this.flashlight.keys.left && this.flashlight.angle.y <= 0.8) {
+                this.flashlight.angle.y += this.flashlight.movespeed;
+            } else if (this.flashlight.keys.right && this.flashlight.angle.y >= -0.8) {
+                this.flashlight.angle.y -= this.flashlight.movespeed;
+            }
+            if (this.flashlight.keys.up && this.flashlight.angle.x <= 0.5) {
+                this.flashlight.angle.x += this.flashlight.movespeed;
+            } else if (this.flashlight.keys.down && this.flashlight.angle.x >= -0.1) {
+                this.flashlight.angle.x -= this.flashlight.movespeed;
             }
 
             const x = Math.cos(t / 2)
@@ -284,7 +307,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
 
             for (let i = 0; i < 1; i++) {
-                this.shapes.box.draw(graphics_state, Mat4.inverse(this.lights[i].transform), this.materials.phong2)
+                this.shapes.moon.draw(graphics_state, Mat4.inverse(this.lights[i].transform).times(Mat4.scale([8, 8, 8])), this.materials.phong2)
             }
             /*
             for (let wallset of this.walls) {
@@ -315,11 +338,20 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.playerM = this.playerM.times(Mat4.translation([this.logic.posX, 0, this.logic.posZ]));
                 this.playerM = this.playerM.times(Mat4.rotation(this.logic.viewDir, Vec.of(0, 1, 0)));
                 graphics_state.camera_transform = Mat4.inverse(this.playerM.times(Mat4.translation([0, 1, 0])));
-                let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
-                    .times(Mat4.translation([-0.5, -0.5, 0]));
-                for (let i = 0; i < this.logic.health; i++) {
-                    this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
-                }
+                // let health = this.playerM.times(Mat4.translation([0.8, 1.8, -2])).times(Mat4.scale([1 / 16, 1 / 16, 1 / 16]))
+                //     .times(Mat4.translation([-0.5, -0.5, 0]));
+                // for (let i = 0; i < this.logic.health; i++) {
+                //     this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
+                // }
+
+                let line = "    Score:" + this.logic.score + "        Health: " + this.logic.health + " %";
+                this.shapes.text.set_string(line);
+                this.shapes.text.draw(graphics_state, this.playerM
+                        .times(Mat4.translation([-0.25, 1.4, -1]))
+                        .times(Mat4.scale([1 / 100, 1 / 80, 1 / 100]))
+                        .times(Mat4.translation([0, -0.5, 0]))
+                    , this.materials.text_image);
+
                 this.time = t;
             } else if (t > this.time + 1) {
                 graphics_state.camera_transform = Mat4.look_at(Vec.of(0, 6, 8), Vec.of(0, 2, 0), Vec.of(0, 1, 0));
@@ -344,48 +376,42 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             /* Save the flashlight origin position before making the flashlight long and thin */
             this.flashlight.collider_transform = this.flashlight.transform
                 .times(Mat4.translation(this.flashlight.centerToTip))
-                .times(Mat4.scale(Array(3).fill(0.01)));
+                .times(Mat4.scale(Array(3).fill(0.005)));
 
             /* Make the lightcone long and thin (long enough to hit the far wall) */
             this.flashlight.transform = this.flashlight.transform
                 .times(Mat4.translation(this.flashlight.centerToTip))
                 .times(Mat4.scale(this.flashlight.longThin))
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
-            
+
             for (let i = 0; i < 5; i++) {
-                this.flashlight.rotation += Math.random()*0.01;
+                this.flashlight.rotation += Math.random() * 0.015;
                 this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
                 this.flashlight.transform = this.flashlight.transform
                     .times(Mat4.translation(this.flashlight.centerToTip))
                     .times(Mat4.rotation(this.flashlight.rotation, [0, 0, 1]))
-                    .times( Mat4.scale([0.5, 0.5, 0.5]) )
+                    .times(Mat4.scale([0.5, 0.5, 0.5]))
                     .times(Mat4.translation(this.flashlight.centerToTip.map(x => -x)));
             }
 
             /* Compute where the collider spheres would be */
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 30; i++) {
                 this.flashlight.collider_transform = this.flashlight.collider_transform
-                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
-                    .times( Mat4.scale(Array(3).fill(1.3)) ); //make the next sphere bigger
-
-                // let matTemp = this.materials.phong2;
+                    .times(Mat4.translation([0, 0, -3])) //move the next sphere forwards
+                    .times(Mat4.scale(Array(3).fill(1.2))); //make the next sphere bigger
 
                 let sphere = {
-                    position: this.flashlight.collider_transform.times( Vec.of(0,0,0,1) ),
-                    radius: 0.001 + i*0.03
+                    position: this.flashlight.collider_transform.times(Vec.of(0, 0, 0, 1)),
+                    radius: 0.001 + i * 0.03
                 };
-                /* For each colliding sphere, check to see if it hits a ghost */
-                for (let j = 0; j < this.colliders.length; j++) {
-                    if (this.colliders[j].collides(sphere)) {
-                        this.colliders[j].damage();
-                        // matTemp = this.materials.phong;
-                        console.log("hit ghost");
-                    }
+
+                /* Go through the colliders object to see if our flashlight has hit any ghosts. Damage them if we did. */
+                for (const col of this.colliders) {
+                    col.collides(sphere) ? col.damage() : null;
                 }
-                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, matTemp);
+                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
             }
 
-            /* Go through each colliders object and see if we've hit any. If so, then call "hit" */
 
             /************************************* flashlight *************************************************/
 
@@ -451,7 +477,8 @@ window.Flashlight_Shader = window.classes.Flashlight_Shader =
         varying float ambient, animation_time;
         varying vec2 f_tex_coord;
         varying vec4 position, center;
-    `;}
+    `;
+        }
 
         vertex_glsl_code() {
             return `

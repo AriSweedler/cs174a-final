@@ -19,14 +19,19 @@ class Logic {
         this.viewDir = 0;
         this.posZ = 0;
         this.posX = 0;
-        this.health = 3;
+        this.health = 100;
+        this.score = 0;
     }
 
     minusHealth() {
-        this.health--;
+        this.health = this.health - 20;
         if (this.health == 0) {
             this.endGame = true;
         }
+    }
+
+    killMonster() {
+        this.score += 50;
     }
 
     changeAngle(angle) {
