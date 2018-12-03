@@ -8,20 +8,15 @@ class Monster extends CollidingSphere {
      this.direction = Vec.of(-4+14*Math.random(),4*Math.random(),10*Math.random()).minus(Vec.of(...position));
      this.speed = 0.002;
      this.alive = true;
-
-
-
-     
   }
 
   damage(){
     this.health = this.health - 0.5;
     this.speed = 0.005+(100-this.health)*0.0015;
-    this.color = Color.of(1,1,1,(this.health/100.0));
+    this.color = Color.of(1,1-((250-2.5*this.health)/100),1-((250-2.5*this.health)/100),(this.health/100.0));
     this.radius = this.radius*((this.health+10.0)/110.0);
     if(this.radius < 0.3){
       this.radius = 0.3;
-
     }
     this.hit = true;
     if(this.health < 60){

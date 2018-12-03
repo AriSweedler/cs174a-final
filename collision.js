@@ -18,10 +18,7 @@ class CollidingSphere {
 
   collides(otherCollider) {
     if (otherCollider.constructor.name === "CollidingSphere") {
-      const diffVec = Vec.of(...this.position).minus(Vec.of(...otherCollider.position))
-      //console.log(diffVec)
-      const dist = Math.sqrt(diffVec.dot(diffVec))
-      return dist <= this.radius + otherCollider.radius
+      return this.collidesSphere(otherCollider);
     }
     if (otherCollider.constructor.name === "CollidingCube") {
       for (let i = 0; i < 6; i++) {
@@ -33,6 +30,12 @@ class CollidingSphere {
       }
       return false;
     }
+  }
+
+  collidesSphere(otherSphere) {
+    const diffVec = Vec.of(...this.position).minus(Vec.of(...otherSphere.position))
+    const dist = Math.sqrt(diffVec.dot(diffVec))
+    return dist <= this.radius + otherSphere.radius
   }
 
   translate(x, y, z) {

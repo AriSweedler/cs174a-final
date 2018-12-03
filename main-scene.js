@@ -222,7 +222,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
             if (this.flashlight.keys.up && this.flashlight.angle.x <= 0.5) {
                 this.flashlight.angle.x += this.flashlight.movespeed;
-            } else if (this.flashlight.keys.down && this.flashlight.angle.x >= -0.1) {
+            } else if (this.flashlight.keys.down && this.flashlight.angle.x >= -0.3) {
                 this.flashlight.angle.x -= this.flashlight.movespeed;
             }
 
@@ -251,6 +251,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 }
 
             }
+
+            // for (let col of this.colliders) {
+            //     MessageChannel
+            // }
 
             //this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
@@ -375,14 +379,20 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
                 let sphere = {
                     position: this.flashlight.collider_transform.times(Vec.of(0, 0, 0, 1)),
-                    radius: 0.001 + i * 0.03
+                    radius: i * 0.01,
+                    constructor: {name: "CollidingSphere"} //lol at this
                 };
 
                 /* Go through the colliders object to see if our flashlight has hit any ghosts. Damage them if we did. */
+                let mat = this.materials.phong2;
                 for (const col of this.colliders) {
-                    col.collides(sphere) ? col.damage() : null;
+                    if (col.collidesSphere(sphere)) {
+                        col.damage();
+                        mat = this.materials.phong;
+                    }
                 }
-                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, this.materials.phong2);
+                /* display the colliding sphere boxes */
+                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, mat);
             }
 
 
@@ -438,6 +448,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.ghost.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
+                if (!this.colliders[i].alive) {
+                    /* remove dead ghosts, give player points */
+                    this.colliders.splice(i, 1);
+                    this.logic.score += 10;
+                }
             }
         }
     };
