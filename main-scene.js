@@ -164,29 +164,19 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }    
 
         make_control_panel() {
-<<<<<<< HEAD
-            this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
-            this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
-=======
             this.live_string(box => {
                 box.textContent = "Player controls:"
             });
-            this.key_triggered_button("Forward", ["w"], () => this.forward = true, undefined, () => this.forward = false);
-            this.key_triggered_button("Back", ["s"], () => this.back = true, undefined, () => this.back = false);
->>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
+            this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
+
             this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
             this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
             this.new_line();
 
-<<<<<<< HEAD
-            this.key_triggered_button("MoveForward", ["g"], () => {
-                this.logic.move(-1);
-                this.play_sound("step");
-=======
             //flashlight controls
             this.live_string(box => {
                 box.textContent = "Flashlight controls:"
->>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
             });
             this.new_line();
             this.key_triggered_button("Up", ["i"], () => this.flashlight.keys.up = true, undefined, () => this.flashlight.keys.up = false);
@@ -201,26 +191,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("switchCamera", ["x"], () => {
                 this.camera = !this.camera;
             });
-<<<<<<< HEAD
+
             this.key_triggered_button("Start", ["Enter"], () => {
                 document.querySelector('.modal#ready').style.display = 'none'; //disables
                 this.play_music("music");
             });
-            this.result_img = this.control_panel.appendChild(
-                Object.assign(document.createElement("img"), {
-                    style: "width:200px; height:" + 200 * this.aspect_ratio + "px"
-                })
-            );
-
-            /*this.key_triggered_button("up", ["8"], () => this.moveup = true, undefined, () => this.moveup = false);
-            this.key_triggered_button("down", ["2"], () => this.movedown = true, undefined, () => this.movedown = false);
-            this.key_triggered_button("left", ["4"], () => this.moveleft = true, undefined, () => this.moveleft = false);
-            this.key_triggered_button("right", ["6"], () => this.moveright = true, undefined, () => this.moveright = false);
-            this.key_triggered_button("in", ["7"], () => this.movein = true, undefined, () => this.movein = false);
-            this.key_triggered_button("out", ["9"], () => this.moveout = true, undefined, () => this.moveout = false);*/
-=======
->>>>>>> af6315833d72bbdd8d93c03893425a3c36d493d0
-
+           
             this.new_line();
         }
 
