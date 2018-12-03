@@ -308,9 +308,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 let line = "    Score:" + 50 + "        Health: " + this.logic.health + " %";
                 this.shapes.text.set_string(line);
                 this.shapes.text.draw(graphics_state, this.playerM
-                        .times(Mat4.translation([-0.25, 0.85, -1]))
+                        .times(Mat4.translation([-0.25, 1.4, -1]))
                         .times(Mat4.scale([1 / 100, 1 / 80, 1 / 100]))
-                        .times(Mat4.translation([0, -2.2, 0]))
+                        .times(Mat4.translation([0, -0.5, 0]))
                     , this.materials.text_image);
 
                 this.time = t;
