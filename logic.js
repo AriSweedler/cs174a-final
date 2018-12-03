@@ -22,11 +22,12 @@ class Logic {
         this.health = 100;
         this.score = 0;
         this.playerHit = 0;
+        this.ghostDamage = 3;
     }
 
-    minusHealth() {
-        this.health = this.health - 1;
-        if (this.health == 0) {
+    minusHealth(damage) {
+        this.health = this.health - damage;
+        if (this.health <= 0) {
             this.endGame = true;
         }
     }

@@ -463,8 +463,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.ghost.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
-                if(this.colliders[i].collides(this.player_collider)){
-                    this.logic.minusHealth();
+                if(this.colliders[i].collides(this.player_collider) && this.time > this.playerHit + 1){
+                    this.logic.minusHealth(this.logic.ghostDamage);
+                    this.playerHit = this.time;
                 }
 
                 /* remove dead ghosts, give player points for kills */
@@ -473,8 +474,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     this.colliders.splice(i,1);
                     this.logic.score += 10;
                     this.kills++;
-                    if(this.kills%3 ==0){
+                    if(this.kills%3 == 0){
                         this.period -= 2.0;
+                        this.logic.ghostDamage *= 2;
                     }
                 }
             }
