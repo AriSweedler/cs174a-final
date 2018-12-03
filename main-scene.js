@@ -286,7 +286,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 //     this.shapes.square.draw(graphics_state, health.times(Mat4.translation([-2 * i, 0, 0])), this.materials.heart);
                 // }
 
-                let line = "    Score:" + 50 + "        Health: " + this.logic.health + " %";
+                let line = "    Score:" + this.logic.score + "        Health: " + this.logic.health + " %";
                 this.shapes.text.set_string(line);
                 this.shapes.text.draw(graphics_state, this.playerM
                         .times(Mat4.translation([-0.25, 1.4, -1]))
@@ -327,7 +327,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 .times(Mat4.translation(this.flashlight.centerToTip.map(i => -i)));
 
             for (let i = 0; i < 5; i++) {
-                this.flashlight.rotation += Math.random()*0.015;
+                this.flashlight.rotation += Math.random() * 0.015;
                 this.shapes.cone.draw(graphics_state, this.flashlight.transform, this.materials.flashlight);
                 this.flashlight.transform = this.flashlight.transform
                     .times(Mat4.translation(this.flashlight.centerToTip))
@@ -339,8 +339,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             /* Compute where the collider spheres would be */
             for (let i = 0; i < 30; i++) {
                 this.flashlight.collider_transform = this.flashlight.collider_transform
-                    .times( Mat4.translation([0, 0, -3]) ) //move the next sphere forwards
-                    .times( Mat4.scale(Array(3).fill(1.2)) ); //make the next sphere bigger
+                    .times(Mat4.translation([0, 0, -3])) //move the next sphere forwards
+                    .times(Mat4.scale(Array(3).fill(1.2))); //make the next sphere bigger
 
                 let sphere = {
                     position: this.flashlight.collider_transform.times(Vec.of(0, 0, 0, 1)),
