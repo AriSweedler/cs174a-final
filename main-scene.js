@@ -28,7 +28,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             };
             this.colliders = [new Monster([0, 0, 0])];
 
-
             this.submit_shapes(context, shapes);
             this.logic = new Logic();
             this.materials = {
