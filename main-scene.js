@@ -23,7 +23,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 square: new Square(),
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
-                moon: new Subdivision_Sphere(4)
+                moon: new Subdivision_Sphere(4),
                 text: new Text_Line(35)
             };
             this.colliders = [new Monster([0, 0, 0])];
@@ -269,7 +269,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
 
             for (let i = 0; i < 1; i++) {
-                this.shapes.moon.draw(graphics_state, Mat4.inverse(this.lights[i].transform).times(Mat4.scale([8,8,8])), this.materials.phong2)
+                this.shapes.moon.draw(graphics_state, Mat4.inverse(this.lights[i].transform).times(Mat4.scale([8, 8, 8])), this.materials.phong2)
             }
             /*
             for (let wallset of this.walls) {
