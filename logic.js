@@ -22,7 +22,7 @@ class Logic {
         this.health = 100;
         this.score = 0;
         this.playerHit = 0;
-        this.ghostDamage = 3;
+        this.ghostDamage = 10;
     }
 
     minusHealth(damage) {

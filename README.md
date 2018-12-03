@@ -40,6 +40,7 @@ the direction of your flashlight is controlled with IJKL.
 * Added logic general file
 * Implemented health and score on the screen
 * Implemented controls of the movement
+* Added last dying scene
 
 ### Sijay Liu, 904787869, sijay.liu@gmail.com
 * Implemented collider objects for sphere-sphere and sphere-cube collisions.

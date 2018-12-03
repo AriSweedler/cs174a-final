@@ -34,7 +34,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 1}),
                 phong3: context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1), {ambient: 1, diffuse: 1}),
-                ghost:  context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 0.7, diffuse: 0.7, specularity: 0.6}),
+                ghost: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {
+                    ambient: 0.7,
+                    diffuse: 0.7,
+                    specularity: 0.6
+                }),
 
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
@@ -45,6 +49,11 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     specularity: 0,
                     ambient: 0.7,
                     texture: context.get_instance("assets/floor.jpg", false)
+                }),
+                'fear': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
+                    specularity: 0,
+                    ambient: 0.7,
+                    texture: context.get_instance("assets/fear.jpg", false)
                 }),
                 'flashlight': context.get_instance(Flashlight_Shader).material(Color.of(0, 0, 0, 1), {
                     // ambient to 1, diffuse to 0, and specular to 0
@@ -111,12 +120,12 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.kills = 0;
             this.period = 10.0;
 
-             this.maxX = 50;
-             this.minX = -50;
-             this.maxZ = 50;
-             this.minZ = -50;
-             this.minY = -4;
-             this.maxY = 6;
+            this.maxX = 50;
+            this.minX = -50;
+            this.maxZ = 50;
+            this.minZ = -50;
+            this.minY = -4;
+            this.maxY = 6;
 
             /* initialize flashlight (make it a class probably) */
             this.flashlight = {
@@ -146,34 +155,43 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }
             this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5);
 
-            this.sounds ={
+            this.sounds = {
                 music: new Audio("assets/music1.wav"),
                 step: new Audio("assets/step.wav")
 
             }
-
+            this.deathTime = 0;
+            this.dead = false;
         }
 
-        play_sound( name, volume = 1 )
-            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .58 ) return;
-              this.sounds[ name ].currentTime = 0;
-              this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
-              this.sounds[ name ].play();
-            }
-        play_music( name)
-            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < 200 ) return;
-              this.sounds[ name ].volume = 0.3;
-              this.sounds[ name ].loop= true;
-              this.sounds[ name ].play();
+        play_sound(name, volume = 1) {
+            if (0 < this.sounds[name].currentTime && this.sounds[name].currentTime < .58) return;
+            this.sounds[name].currentTime = 0;
+            this.sounds[name].volume = Math.min(Math.max(volume, 0), 1);
+            ;
+            this.sounds[name].play();
+        }
 
-            }    
+        play_music(name) {
+            if (0 < this.sounds[name].currentTime && this.sounds[name].currentTime < 200) return;
+            this.sounds[name].volume = 0.3;
+            this.sounds[name].loop = true;
+            this.sounds[name].play();
+
+        }
 
         make_control_panel() {
             this.live_string(box => {
                 box.textContent = "Player controls:"
             });
-            this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
-            this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
+            this.key_triggered_button("Forward", ["w"], () => {
+                this.forward = true;
+                this.play_sound("step");
+            }, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => {
+                this.back = true;
+                this.play_sound("step");
+            }, undefined, () => this.back = false);
             this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
             this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
             this.new_line();
@@ -207,6 +225,60 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
             const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             this.time = t;
+
+            if (this.logic.health <= 0) {
+                if (!this.dead) {
+                    this.deathTime = t + 6;
+                    this.dead = true;
+                }
+                let reviveTime = this.deathTime - t;
+                this.lights[0].position = Mat4.identity();
+                graphics_state.camera_transform = Mat4.identity();
+
+                if (reviveTime >= 0.5) {
+                    let line = "You are DEAD!";
+                    this.shapes.text.set_string(line);
+                    let deadPos = Mat4.identity()
+                        .times(Mat4.translation([-0.2, 0.5, -2]))
+                        .times(Mat4.scale([1 / 40, 1 / 40, 1 / 40]));
+                    this.shapes.text.draw(graphics_state, deadPos
+                        , this.materials.text_image);
+
+                    line = "You earned " + this.logic.score + " points this game";
+                    this.shapes.text.set_string(line);
+                    deadPos = deadPos
+                        .times(Mat4.translation([-11, -8, 0]));
+                    this.shapes.text.draw(graphics_state, deadPos
+                        , this.materials.text_image);
+
+                    line = "and the battle isn't over yet!";
+                    this.shapes.text.set_string(line);
+                    deadPos = deadPos
+                        .times(Mat4.translation([0, -8, 0]));
+                    this.shapes.text.draw(graphics_state, deadPos
+                        , this.materials.text_image);
+
+                    line = "Your soul will be back in " + reviveTime;
+                    this.shapes.text.set_string(line);
+                    deadPos = deadPos
+                        .times(Mat4.translation([-2, -8, 0]));
+                    this.shapes.text.draw(graphics_state, deadPos
+                        , this.materials.text_image);
+                } else {
+                    let pa = Mat4.identity().times(Mat4.translation([0, 0, -2.41]));
+                    this.shapes.square.draw(graphics_state, pa, this.materials.fear);
+                }
+
+                if (reviveTime <= 0) {
+                    this.logic.health = 100;
+                    this.logic.score = 0;
+                    this.logic.posX = 0;
+                    this.logic.posZ = 0;
+                    this.logic.viewDir = 0;
+                    this.dead = false;
+                }
+                return;
+            }
 
             if (this.forward) {
                 this.logic.move(-1)
@@ -452,10 +524,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             if (t > this.nextSpawn && t < this.nextSpawn + 1) {
                 if (this.colliders.length == 0 && this.started) {
-                    this.colliders.push(new Monster([this.player_collider.position[0]-15,0,this.player_collider.position[2]-5+10*Math.random()]));
-                }
-                else if (this.colliders.length < 10 && this.started) {
-                    this.colliders.push(new Monster([this.minX+(this.maxX-this.minX)*Math.random(),this.minY+(this.maxY-this.minY)*Math.random(),this.minZ+(this.maxZ-this.minZ)]));
+                    this.colliders.push(new Monster([this.player_collider.position[0] - 15, 0, this.player_collider.position[2] - 5 + 10 * Math.random()]));
+                } else if (this.colliders.length < 10 && this.started) {
+                    this.colliders.push(new Monster([this.minX + (this.maxX - this.minX) * Math.random(), this.minY + (this.maxY - this.minY) * Math.random(), this.minZ + (this.maxZ - this.minZ)]));
                 }
                 this.nextSpawn += this.period;
             }
@@ -463,18 +534,18 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             for (var i = 0; i < this.colliders.length; i++) {
                 this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.ghost.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
-                if(this.colliders[i].collides(this.player_collider) && this.time > this.playerHit + 1){
+                if (this.colliders[i].collides(this.player_collider) && this.time > this.playerHit + 1) {
                     this.logic.minusHealth(this.logic.ghostDamage);
                     this.playerHit = this.time;
                 }
 
                 /* remove dead ghosts, give player points for kills */
-                if(!this.colliders[i].alive){
+                if (!this.colliders[i].alive) {
                     console.log("Ghost died");
-                    this.colliders.splice(i,1);
+                    this.colliders.splice(i, 1);
                     this.logic.score += 10;
                     this.kills++;
-                    if(this.kills%3 == 0){
+                    if (this.kills % 3 == 0) {
                         this.period -= 2.0;
                         this.logic.ghostDamage *= 2;
                     }
