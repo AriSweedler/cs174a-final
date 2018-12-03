@@ -252,9 +252,15 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
 
             }
 
-            // for (let col of this.colliders) {
-            //     MessageChannel
-            // }
+            for (let col of this.colliders) {
+                if (col.collidesSphere(this.player_collider)) {
+                    if (this.logic.playerHit + 2 < this.time) {
+                        console.log("player hit");
+                        this.logic.playerHit = this.time;
+                        this.logic.health -= 7;
+                    }
+                }
+            }
 
             //this.shapes.box.draw(graphics_state, Mat4.scale([50, 1, 50]).times(Mat4.translation([0, -3, 0])), this.materials.floor)
             //this.shapes.box.draw(graphics_state, Mat4.scale([500, 100, 3]).times(Mat4.translation([0, 0, 150])), this.materials.wall)
@@ -452,6 +458,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     /* remove dead ghosts, give player points */
                     this.colliders.splice(i, 1);
                     this.logic.score += 10;
+                    console.log("Ghost died");
                 }
             }
         }

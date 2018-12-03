@@ -21,6 +21,7 @@ class Logic {
         this.posX = 0;
         this.health = 100;
         this.score = 0;
+        this.playerHit = 0;
     }
 
     minusHealth() {
