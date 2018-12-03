@@ -9,7 +9,7 @@ the direction of your flashlight is controlled with IJKL.
 
 ## What We Did
 
-### Ari Sweedler, UID, email
+### Ari Sweedler, 704742749, ari@sweedler.com
 * The flashlight. Used Sijay's collider function to check collision (of the
   flashlight beam) with Darica's ghost.
   * I use the model transform of the player as my origin - I put the flashlight
@@ -26,7 +26,13 @@ the direction of your flashlight is controlled with IJKL.
     * Instead of drawing these, I simply get their xyz coordinates & radius,
       then check to see if they collide with any ghosts.
 
-### Darica Louie, UID, email
+### Darica Louie, 904785399, darica.louie@gmail.com
+* Used Sijay's colliding sphere class to extend to ghost class.
+  * ghosts move by randomly generating a position within bounds and moving toward there
+  * once damaged, ghosts move toward player by traveling along vector from player position to ghost position
+  * ghosts' damage is visually represented by their size and transparency
+* Added sound
+* Added start screen
 
 
 ### Nikita Lukyanenko, 104951076, nikita1923666@gmail.com
@@ -35,7 +41,7 @@ the direction of your flashlight is controlled with IJKL.
 * Implemented health and score on the screen
 * Implemented controls of the movement
 
-### Sijay Liu, UID, email
+### Sijay Liu, 904787869, sijay.liu@gmail.com
 * Implemented collider objects for sphere-sphere and sphere-cube collisions.
 * Implemented shadowmapping shader.
 * Implemented simple level generation.
