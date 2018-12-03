@@ -230,6 +230,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 if (!this.dead) {
                     this.deathTime = t + 6;
                     this.dead = true;
+                    // TODO: SOUND HEAR PLEASE!)
                 }
                 let reviveTime = this.deathTime - t;
                 this.lights[0].position = Mat4.identity();
