@@ -24,7 +24,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 player: new Subdivision_Sphere(4),
                 sphere: new Subdivision_Sphere(1),
             };
-            this.colliders = [new Monster([0, 0, 0])];
+            this.colliders = [];
 
 
             this.submit_shapes(context, shapes);
@@ -33,6 +33,8 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 phong: context.get_instance(Phong_Shader).material(Color.of(1, 1, 0, 1)),
                 phong2: context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 1, diffuse: 1}),
                 phong3: context.get_instance(Phong_Shader).material(Color.of(1, 0, 1, 1), {ambient: 1, diffuse: 1}),
+                ghost:  context.get_instance(Phong_Shader).material(Color.of(1, 1, 1, 1), {ambient: 0.7, diffuse: 0.7, specularity: 0.6}),
+
                 'wall': context.get_instance(Phong_Shader).material(Color.of(0, 0, 0, 1), {
                     specularity: 0,
                     ambient: 0.5,
@@ -88,6 +90,13 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.time = 0;
             this.nextSpawn = 5.0;
 
+             this.maxX = 50;
+             this.minX = -50;
+             this.maxZ = 50;
+             this.minZ = -50;
+             this.minY = -4;
+             this.maxY = 6;
+
             /* initialize flashlight (make it a class probably) */
             this.flashlight = {
                 angle: {
@@ -112,18 +121,38 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 this.walls.push(new CollidingCube([Math.random() * 40 + 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
                 this.walls.push(new CollidingCube([Math.random() * -40 - 5, 0, Math.random() * -40 - 5], [1, 4, 1], Math.random() * 7, [0, 1, 0]))
             }
-            this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5)
+            this.player_collider = new CollidingSphere([0, 0, 0], 0, [1, 0, 0], 0.5);
+
+            this.sounds ={
+                music: new Audio("assets/music.mp3"),
+                step: new Audio("assets/step.wav")
+
+            }
 
         }
 
+        play_sound( name, volume = 1 )
+            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .58 ) return;
+              this.sounds[ name ].currentTime = 0;
+              this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
+              this.sounds[ name ].play();
+            }
+        play_music( name)
+            { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < 3000 ) return;
+              this.sounds[ name ].currentTime = 0;
+              this.sounds[ name ].volume = 0.4;
+              this.sounds[ name ].play();
+            }    
+
         make_control_panel() {
-            this.key_triggered_button("Forward", ["w"], () => this.forward = true, undefined, () => this.forward = false);
-            this.key_triggered_button("Back", ["s"], () => this.back = true, undefined, () => this.back = false);
+            this.key_triggered_button("Forward", ["w"], () => {this.forward = true; this.play_sound("step");}, undefined, () => this.forward = false);
+            this.key_triggered_button("Back", ["s"], () => {this.back = true; this.play_sound("step");}, undefined, () => this.back = false);
             this.key_triggered_button("Turn Left", ["a"], () => this.left = true, undefined, () => this.left = false);
             this.key_triggered_button("Turn Right", ["d"], () => this.right = true, undefined, () => this.right = false);
 
             this.key_triggered_button("MoveForward", ["g"], () => {
                 this.logic.move(-1);
+                this.play_sound("step");
             });
             this.key_triggered_button("MoveBack", ["b"], () => {
                 this.logic.move(1);
@@ -136,6 +165,10 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             });
             this.key_triggered_button("switchCamera", ["x"], () => {
                 this.camera = !this.camera;
+            });
+            this.key_triggered_button("Start", ["Enter"], () => {
+                document.querySelector('.modal#ready').style.display = 'none'; //disables
+                this.play_music("music");
             });
             this.result_img = this.control_panel.appendChild(
                 Object.assign(document.createElement("img"), {
@@ -397,14 +430,14 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             }*/
 
             if (t > this.nextSpawn && t < this.nextSpawn + 1) {
-                if (this.colliders.length < 7) {
-                    this.colliders.push(new Monster([-5, 1, 0]));
+                if (this.colliders.length < 10) {
+                    this.colliders.push(new Monster([this.minX+(this.maxX-this.minX)*Math.random(),this.minY+(this.maxY-this.minY)*Math.random(),this.minZ+(this.maxZ-this.minZ)]));
                 }
                 this.nextSpawn += 5.0;
             }
 
             for (var i = 0; i < this.colliders.length; i++) {
-                this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.phong.override({color: this.colliders[i].color}));
+                this.colliders[i].draw(graphics_state, this.shapes.player, this.materials.ghost.override({color: this.colliders[i].color}));
                 this.colliders[i].move(t, this.playerPos);
             }
         }
