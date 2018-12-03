@@ -10,13 +10,30 @@ the direction of your flashlight is controlled with IJKL.
 ## What We Did
 
 ### Ari Sweedler, UID, email
-
+* The flashlight. Used Sijay's collider function to check collision (of the
+  flashlight beam) with Darica's ghost.
+  * I use the model transform of the player as my origin - I put the flashlight
+    origin where I think the right hand of the player would be  (if our player
+    had a right hand)
+  * Then, I placed a cone at the flashlight origin to represent the light. I
+    failed at the crepscular lighting part of my task 
+    * I instead wrote a custom shader that just rotated a "light ray" texture
+      over a cone. I placed 5 of these "light cones" a the flashlight origin to
+      affect light rays.
+  * Also coming from the flashlight origin are a series of sphere collider
+    obejcts, scaled and translated to be inside the light cone. It's the same
+    exact method as drawing assignment 1's boxes.
+    * Instead of drawing these, I simply get their xyz coordinates & radius,
+      then check to see if they collide with any ghosts.
 
 ### Darica Louie, UID, email
 
 
 ### Nikita Lukyanenko, 104951076, nikita1923666@gmail.com
-* Implemented some
+* Implemented text in to the dependencies
+* Added logic general file
+* Implemented health and score on the screen
+* Implemented controls of the movement
 
 ### Sijay Liu, UID, email
 * Implemented collider objects for sphere-sphere and sphere-cube collisions.
