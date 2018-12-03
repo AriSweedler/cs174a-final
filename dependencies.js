@@ -21,7 +21,7 @@ window.Triangle = window.classes.Triangle =
 
 window.Square = window.classes.Square =
     class Square extends Shape              // A square, demonstrating two triangles that share vertices.  On any planar surface, the interior
-                                            // edges don't make any important seams.  In these cases there's no reason not to re-use data of
+        // edges don't make any important seams.  In these cases there's no reason not to re-use data of
     {                                       // the common vertices between triangles.  This makes all the vertex arrays (position, normals,
         constructor()                         // etc) smaller and more cache friendly.
         {
@@ -47,8 +47,7 @@ window.Tetrahedron = window.classes.Tetrahedron =
                 this.normals.push(...Vec.cast([-a, -a, -a], [1, 0, 0], [0, 1, 0], [0, 0, 1]));
                 this.texture_coords.push(...Vec.cast([0, 0], [1, 0], [0, 1,], [1, 1]));
                 this.indices.push(0, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 3);  // Vertices are shared multiple times with this method.
-            }
-            else {
+            } else {
                 this.positions.push(...Vec.cast([0, 0, 0], [1, 0, 0], [0, 1, 0],         // Method 2:  A tetrahedron with
                     [0, 0, 0], [1, 0, 0], [0, 0, 1],         // four independent triangles.
                     [0, 0, 0], [0, 1, 0], [0, 0, 1],
@@ -110,31 +109,31 @@ window.Cube = window.classes.Cube =
                 }
         }
 
-/*
-    draw( graphics_state, model_transform, material, type = "TRIANGLES", gl = this.gl )        // To appear onscreen, a shape of any variety
-    { if( !this.gl ) throw "This shape's arrays are not copied over to graphics card yet.";  // goes through this draw() function, which
-      material.shader.activate();                                                            // executes the shader programs.  The shaders
-      material.shader.update_GPU( graphics_state, model_transform, material );               // draw the right shape due to pre-selecting
-                                                                                             // the correct buffer region in the GPU that
-      for( let [ attr_name, attribute ] of Object.entries( material.shader.g_addrs.shader_attributes ) )  // holds that shape's data.
-      { const buffer_name = material.shader.map_attribute_name_to_buffer_name( attr_name )
-        if( !buffer_name || !attribute.enabled )
-          { if( attribute.index >= 0 ) gl.disableVertexAttribArray( attribute.index );
-            continue;
-          }
-        gl.enableVertexAttribArray( attribute.index );
-        gl.bindBuffer( gl.ARRAY_BUFFER, this.array_names_mapping_to_WebGLBuffers[ buffer_name ] ); // Activate the correct buffer.
-        gl.vertexAttribPointer( attribute.index, attribute.size, attribute.type,                   // Populate each attribute 
-                                attribute.normalized, attribute.stride, attribute.pointer );       // from the active buffer.
-      }
-        
+        /*
+            draw( graphics_state, model_transform, material, type = "TRIANGLES", gl = this.gl )        // To appear onscreen, a shape of any variety
+            { if( !this.gl ) throw "This shape's arrays are not copied over to graphics card yet.";  // goes through this draw() function, which
+              material.shader.activate();                                                            // executes the shader programs.  The shaders
+              material.shader.update_GPU( graphics_state, model_transform, material );               // draw the right shape due to pre-selecting
+                                                                                                     // the correct buffer region in the GPU that
+              for( let [ attr_name, attribute ] of Object.entries( material.shader.g_addrs.shader_attributes ) )  // holds that shape's data.
+              { const buffer_name = material.shader.map_attribute_name_to_buffer_name( attr_name )
+                if( !buffer_name || !attribute.enabled )
+                  { if( attribute.index >= 0 ) gl.disableVertexAttribArray( attribute.index );
+                    continue;
+                  }
+                gl.enableVertexAttribArray( attribute.index );
+                gl.bindBuffer( gl.ARRAY_BUFFER, this.array_names_mapping_to_WebGLBuffers[ buffer_name ] ); // Activate the correct buffer.
+                gl.vertexAttribPointer( attribute.index, attribute.size, attribute.type,                   // Populate each attribute
+                                        attribute.normalized, attribute.stride, attribute.pointer );       // from the active buffer.
+              }
 
-      this.execute_shaders( gl, type );   
 
-     
-      //gl.bindTexture(gl.TEXTURE_2D, null);
-                                                   // Run the shaders to draw every triangle now.
-*/
+              this.execute_shaders( gl, type );
+
+
+              //gl.bindTexture(gl.TEXTURE_2D, null);
+                                                           // Run the shaders to draw every triangle now.
+        */
 
     }
 
@@ -267,10 +266,10 @@ window.Grid_Patch = window.classes.Grid_Patch =
 
 window.Surface_Of_Revolution = window.classes.Surface_Of_Revolution =
     class Surface_Of_Revolution extends Grid_Patch      // SURFACE OF REVOLUTION: Produce a curved "sheet" of triangles with rows and columns.
-                                                        // Begin with an input array of points, defining a 1D path curving through 3D space --
-                                                        // now let each such point be a row.  Sweep that whole curve around the Z axis in equal
-                                                        // steps, stopping and storing new points along the way; let each step be a column. Now
-                                                        // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
+        // Begin with an input array of points, defining a 1D path curving through 3D space --
+        // now let each such point be a row.  Sweep that whole curve around the Z axis in equal
+        // steps, stopping and storing new points along the way; let each step be a column. Now
+        // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
     {
         constructor(rows, columns, points, texture_coord_range, total_curvature_angle = 2 * Math.PI) {
             const row_operation = i => Grid_Patch.sample_array(points, i),
@@ -505,11 +504,11 @@ window.Funny_Shader = window.classes.Funny_Shader =
 
 window.Phong_Shader = window.classes.Phong_Shader =
     class Phong_Shader extends Shader          // THE DEFAULT SHADER: This uses the Phong Reflection Model, with optional Gouraud shading.
-                                               // Wikipedia has good defintions for these concepts.  Subclasses of class Shader each store
-                                               // and manage a complete GPU program.  This particular one is a big "master shader" meant to
-                                               // handle all sorts of lighting situations in a configurable way.
-                                               // Phong Shading is the act of determining brightness of pixels via vector math.  It compares
-                                               // the normal vector at that pixel to the vectors toward the camera and light sources.
+        // Wikipedia has good defintions for these concepts.  Subclasses of class Shader each store
+        // and manage a complete GPU program.  This particular one is a big "master shader" meant to
+        // handle all sorts of lighting situations in a configurable way.
+        // Phong Shading is the act of determining brightness of pixels via vector math.  It compares
+        // the normal vector at that pixel to the vectors toward the camera and light sources.
         // *** How Shaders Work:
         // The "vertex_glsl_code" string below is code that is sent to the graphics card at runtime,
         // where on each run it gets compiled and linked there.  Thereafter, all of your calls to draw
@@ -667,23 +666,22 @@ window.Phong_Shader = window.classes.Phong_Shader =
                 gpu.shader_attributes["tex_coord"].enabled = true;
                 gl.uniform1f(gpu.USE_TEXTURE_loc, 1);
                 gl.bindTexture(gl.TEXTURE_2D, material.texture.id);
-            }
-            else {
+            } else {
                 gl.uniform1f(gpu.USE_TEXTURE_loc, 0);
                 gpu.shader_attributes["tex_coord"].enabled = false;
             }
 
-/*
-            if (!g_state.lights.length) return;
-            var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
-            for (var i = 0; i < 4 * g_state.lights.length; i++) {
-                lightPositions_flattened.push(g_state.lights[Math.floor(i / 4)].position[i % 4]);
-                lightColors_flattened.push(g_state.lights[Math.floor(i / 4)].color[i % 4]);
-                lightAttenuations_flattened[Math.floor(i / 4)] = g_state.lights[Math.floor(i / 4)].attenuation;
-            }
-            gl.uniform4fv(gpu.lightPosition_loc, lightPositions_flattened);
-            gl.uniform4fv(gpu.lightColor_loc, lightColors_flattened);
-            gl.uniform1fv(gpu.attenuation_factor_loc, lightAttenuations_flattened);*/
+            /*
+                        if (!g_state.lights.length) return;
+                        var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
+                        for (var i = 0; i < 4 * g_state.lights.length; i++) {
+                            lightPositions_flattened.push(g_state.lights[Math.floor(i / 4)].position[i % 4]);
+                            lightColors_flattened.push(g_state.lights[Math.floor(i / 4)].color[i % 4]);
+                            lightAttenuations_flattened[Math.floor(i / 4)] = g_state.lights[Math.floor(i / 4)].attenuation;
+                        }
+                        gl.uniform4fv(gpu.lightPosition_loc, lightPositions_flattened);
+                        gl.uniform4fv(gpu.lightColor_loc, lightColors_flattened);
+                        gl.uniform1fv(gpu.attenuation_factor_loc, lightAttenuations_flattened);*/
         }
 
         update_matrices(g_state, model_transform, gpu, gl)                                    // Helper function for sending matrices to GPU.
@@ -880,7 +878,7 @@ window.Global_Info_Table = window.classes.Global_Info_Table =
                     }))
                 if (obj.to_string) return this.box.appendChild(Object.assign(document.createElement("div"), {innerText: obj.to_string()}));
                 for (let [key, val] of Object.entries(obj)) {
-                    if (typeof(val) == "object")
+                    if (typeof (val) == "object")
                         this.box.appendChild(Object.assign(document.createElement("a"), {
                             className: "link", innerText: key,
                             onmousedown: () => this.current_object = val
@@ -891,5 +889,40 @@ window.Global_Info_Table = window.classes.Global_Info_Table =
                 }
             }
             this.live_string(box => show_object(box, this.current_object));
+        }
+    }
+
+window.Text_Line = window.classes.Text_line =
+    class Text_Line extends Shape                       // Text_Line embeds text in the 3D world, using a crude texture method.  This
+    {                                                   // Shape is made of a horizontal arrangement of quads. Each is textured over with
+                                                        // images of ASCII characters, spelling out a string.  Usage:  Instantiate the
+                                                        // Shape with the desired character line width.  Assign it a single-line string
+                                                        // by calling set_string("your string") on it. Draw the shape on a material
+                                                        // with full ambient weight, and text.png assigned as its texture file.  For
+        constructor(max_size)                           // multi-line strings, repeat this process and draw with a different matrix.
+        {
+            super("positions", "normals", "texture_coords");
+            this.max_size = max_size;
+            var object_transform = Mat4.identity();
+            for (var i = 0; i < max_size; i++) {
+                Square.insert_transformed_copy_into(this, [], object_transform);   // Each quad is a separate Square instance.
+                object_transform.post_multiply(Mat4.translation([1.5, 0, 0]));
+            }
+        }
+
+        set_string(line, gl = this.gl)        // Overwrite the texture coordinates buffer with new values per quad,
+        {
+            this.texture_coords = [];           // which enclose each of the string's characters.
+            for (var i = 0; i < this.max_size; i++) {
+                var row = Math.floor((i < line.length ? line.charCodeAt(i) : ' '.charCodeAt()) / 16),
+                    col = Math.floor((i < line.length ? line.charCodeAt(i) : ' '.charCodeAt()) % 16);
+
+                var skip = 3, size = 32, sizefloor = size - skip;
+                var dim = size * 16, left = (col * size + skip) / dim, top = (row * size + skip) / dim,
+                    right = (col * size + sizefloor) / dim, bottom = (row * size + sizefloor + 5) / dim;
+
+                this.texture_coords.push(...Vec.cast([left, 1 - bottom], [right, 1 - bottom], [left, 1 - top], [right, 1 - top]));
+            }
+            this.copy_onto_graphics_card(gl, ["texture_coords"], false);
         }
     }
