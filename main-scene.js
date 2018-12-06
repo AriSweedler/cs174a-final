@@ -138,6 +138,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                 longThin: [1, 1, 10],
                 collider_transform: null,
                 colliders: [],
+                draw_colliders: false,
                 rotation: 0,
                 keys: {},
                 movespeed: 0.01
@@ -166,7 +167,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             if (0 < this.sounds[name].currentTime && this.sounds[name].currentTime < .58) return;
             this.sounds[name].currentTime = 0;
             this.sounds[name].volume = Math.min(Math.max(volume, 0), 1);
-            ;
             this.sounds[name].play();
         }
 
@@ -175,7 +175,6 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.sounds[name].volume = 0.3;
             this.sounds[name].loop = true;
             this.sounds[name].play();
-
         }
 
         make_control_panel() {
@@ -203,6 +202,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
             this.key_triggered_button("Down", ["k"], () => this.flashlight.keys.down = true, undefined, () => this.flashlight.keys.down = false);
             this.key_triggered_button("Left", ["j"], () => this.flashlight.keys.left = true, undefined, () => this.flashlight.keys.left = false);
             this.key_triggered_button("Right", ["l"], () => this.flashlight.keys.right = true, undefined, () => this.flashlight.keys.right = false);
+            this.key_triggered_button("colliders", ["m"], () => this.flashlight.draw_colliders = true, undefined, () => this.flashlight.draw_colliders = false);
             this.new_line();
 
             this.live_string(box => {
@@ -325,7 +325,7 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     }
                     //if (this.left) { this.logic.changeAngle(-2) }
                     //if (this.right) { this.logic.changeAngle(2) }
-                    //this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
+                    this.player_collider.draw(graphics_state, this.shapes.player, this.materials.phong)
                     break;
                 }
 
@@ -477,7 +477,9 @@ window.Term_Project_Scene = window.classes.Term_Project_Scene =
                     }
                 }
                 /* display the colliding sphere boxes */
-                // this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, mat);
+                if (this.flashlight.draw_colliders) {
+                  this.shapes.sphere.draw(graphics_state, this.flashlight.collider_transform, mat);
+                }
             }
 
 
